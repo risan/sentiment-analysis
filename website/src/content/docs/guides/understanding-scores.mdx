@@ -1,0 +1,80 @@
+---
+title: Understanding the scores
+description: What compound, positive, neutral and negative mean, how the label is chosen, and which rules (negation, boosters, caps, punctuation, emoji) change a score.
+---
+
+import ResultsTable from '../../../components/ResultsTable.astro';
+
+Every call to `analyze()` returns a [`Result`](/reference/result/) with a label and four numbers. This page explains where they come from.
+
+```php
+$result = Sentiment::analyze('VADER is smart, handsome, and funny.');
+
+$result->compound; // 0.8316
+$result->positive; // 0.746
+$result->neutral;  // 0.254
+$result->negative; // 0.0
+$result->label;    // Label::Positive
+```
+
+## Compound
+
+`compound` is the one number to use when you want a single score. It runs from **-1** (extremely negative) to **+1** (extremely positive), rounded to four decimals.
+
+It is computed in three steps:
+
+1. Every word found in the lexicon contributes its valence (-4 to +4), adjusted by the rules below.
+2. The valences are summed.
+3. The sum is normalized so it always lands between -1 and +1. Long, strongly worded text approaches the limits but never passes them.
+
+Because of that last step, a compound of `0.5` does not mean "50% positive". Read it as a position on a scale: close to 0 is neutral, close to ±1 is emphatic.
+
+## Positive, neutral and negative
+
+`positive`, `neutral` and `negative` are **ratios** between 0 and 1, rounded to three decimals. They show how the text splits between positive signal, negative signal and everything else, and they add up to about 1.
+
+For `VADER is smart, handsome, and funny.`, 74.6% of the signal is positive, none is negative, and the remaining 25.4% is neutral (words with no sentiment, such as `VADER` and `is`).
+
+These ratios are not probabilities. A text that is mostly neutral words with one mildly positive word can have a high `neutral` and still a clearly positive `compound`. Use them to see how a text is built, and use `compound` (or the label) to decide.
+
+## Label
+
+The [`Label`](/reference/label/) is derived from `compound` and the [threshold](/guides/thresholds/):
+
+| Condition | Label |
+|---|---|
+| `compound >= threshold` (and above 0) | `Label::Positive` |
+| `compound <= -threshold` (and below 0) | `Label::Negative` |
+| anything else | `Label::Neutral` |
+
+The default threshold is `0.05`, the value recommended by the VADER authors.
+
+## What changes a score
+
+The model does not just add up word values. These rules shape the result:
+
+| Rule | Example | Effect |
+|---|---|---|
+| Negation | `not good` | Flips and softens the word |
+| Intensifier | `very good`, `extremely bad` | Strengthens the word |
+| Dampener | `kind of good`, `slightly bad` | Weakens the word |
+| ALL CAPS | `this is GREAT` | Strengthens the shouted word |
+| Exclamation marks | `great!!!` | Adds emphasis, up to 4 marks |
+| Question marks | `great???` | Adds a little emphasis |
+| Contrast | `good food but terrible service` | The part after "but" weighs more |
+| Emoticons and emoji | `:)`, `❤️`, `😠` | Count as sentiment words |
+
+For example, these English texts are in increasing order of positivity: `not good`, `good`, `very good`, `VERY good!!!`.
+
+Indonesian has the same rules plus intensifiers that come after the word (`bagus banget`), contrast words such as `tapi` and `namun`, and informal negations such as `gak`. See [Languages](/guides/languages/).
+
+## Examples
+
+<ResultsTable />
+
+## Tips
+
+- **Classify with the label**, rank with `compound`.
+- **Empty or whitespace-only text** gives all zeros and a neutral label.
+- **Text with no known words** is neutral. The model only knows what its lexicon knows; [add your own words](/guides/customizing-the-lexicon/) for domain slang.
+- **Long text** is better analyzed sentence by sentence. See [Long text](/guides/long-text/).

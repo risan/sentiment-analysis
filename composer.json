@@ -1,24 +1,50 @@
 {
-  "name": "risan/sentiment-analysis",
-  "type": "library",
-  "description": "Sentiment analysis library for PHP.",
-  "keywords": ["sentiment", "analysis", "opinion", "mining"],
-  "homepage": "https://github.com/risan/sentiment-analysis",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Risan Bagja Pradana",
-      "email": "risanbagja@gmail.com",
-      "homepage": "https://github.com/risan",
-      "role": "Developer"
-    }
-  ],
-  "autoload": {
-    "psr-4": {
-      "SentimentAnalysis\\": "src/"
-    }
-  },
-  "require-dev": {
-    "phpunit/phpunit": "~4.8"
-  }
+    "name": "risan/sentiment-analysis",
+    "type": "library",
+    "description": "Fast, dependency-free sentiment analysis for PHP. VADER scoring for English and Indonesian.",
+    "keywords": ["sentiment", "sentiment-analysis", "vader", "nlp", "opinion-mining", "indonesian"],
+    "homepage": "https://sentiment-analysis.risanb.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Risan Bagja Pradana",
+            "email": "risanbagja@gmail.com",
+            "homepage": "https://github.com/risan",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/risan/sentiment-analysis/issues",
+        "source": "https://github.com/risan/sentiment-analysis"
+    },
+    "require": {
+        "php": "^8.3",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Risan\\Sentiment\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "lint": "pint --test",
+        "lint:fix": "pint",
+        "analyse": "phpstan analyse",
+        "bench": "@php benchmarks/run.php",
+        "build:lexicons": "@php tools/build-lexicons.php"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

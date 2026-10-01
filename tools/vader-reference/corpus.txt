@@ -1,0 +1,768 @@
+# Hand-written inputs for the golden corpus, one text per line.
+# Lines starting with '# ' (hash and space) and empty lines are skipped.
+# Escapes: \t \n \r \\ \xNN \uNNNN \UNNNNNNNN. Everything else is literal.
+# generate.py adds the empty string and the 45-neutral-token rounding tie itself.
+
+# --- the reference's own demo sentences ---
+VADER is smart, handsome, and funny.
+VADER is smart, handsome, and funny!
+VADER is very smart, handsome, and funny.
+VADER is VERY SMART, handsome, and FUNNY.
+VADER is VERY SMART, handsome, and FUNNY!!!
+VADER is VERY SMART, uber handsome, and FRIGGIN FUNNY!!!
+VADER is not smart, handsome, nor funny.
+The book was good.
+At least it isn't a horrible book.
+The book was only kind of good.
+The plot was good, but the characters are uncompelling and the dialog is not great.
+Today SUX!
+Today only kinda sux! But I'll get by, lol
+Make sure you :) or :D today!
+Catch utf-8 emoji such as 💘 and 💋 and 😁
+Not bad at all
+Sentiment analysis has never been good.
+Sentiment analysis has never been this good!
+Most automated sentiment analysis tools are shit.
+With VADER, sentiment analysis is the shit!
+Other sentiment analysis tools can be quite bad.
+On the other hand, VADER is quite bad ass
+VADER is such a badass!
+Without a doubt, excellent idea.
+Roger Dodger is one of the most compelling variations on this theme.
+Roger Dodger is at least compelling as a variation on the theme.
+Roger Dodger is one of the least compelling variations on this theme.
+Not such a badass after all.
+Without a doubt, an excellent idea.
+It was one of the worst movies I've seen, despite good reviews. Unbelievably bad acting!! Poor direction. VERY poor production. The movie was bad. Very bad movie. VERY BAD movie!
+balloons
+cake
+candles
+happy birthday
+friends
+laughing
+smiling
+party
+riot
+fire
+fight
+blood
+mob
+war
+police
+tear gas
+
+# --- plain words and neutral text ---
+good
+bad
+GOOD
+BAD
+Good
+The table is in the kitchen.
+I went to the store to buy some milk.
+Nothing happened today.
+great
+terrible
+awesome
+awful
+love
+hate
+LOVE
+HATE
+like
+dislike
+enjoy
+I love it and I hate it
+
+# --- negation at distance 1, 2 and 3 ---
+The food is not good
+The food is not very good
+The food is not a good one
+The food is not really that good
+The food was not at all good
+This is not what I would call good
+It isn't good
+It isn't very good
+It isn't a good idea
+It isn't what I would call good
+I don't like it
+I don't really like it
+I don't think I like it
+I do not like it
+I can't stand it
+I cannot stand it
+I couldn't care less, it is great
+She wasn't happy
+He hasn't been great lately
+They aren't bad
+They weren't terrible
+We won't be disappointed
+That wouldn't be awful
+Never good
+Never very good
+Never a good time
+He never smiled
+Nobody is happy
+Nothing is good
+None of it is good
+Neither good nor bad
+Nor good
+It is not bad
+It is not bad at all
+NOT good
+Not GOOD
+not GOOD
+NOT GOOD
+It ain't good
+It AIN'T good
+It isnt good
+It dont work well
+I didnt like it
+Hardly good
+Rarely good
+Seldom happy
+Despite the good food, we left
+Despite everything it was great
+Without joy
+Without any joy
+Without a single smile
+uh-uh good
+Nope good
+He said nope, great
+isn’t good
+I can’t stand it
+It was not good, not great, not even okay
+
+# --- no X, no X or Y ---
+no good
+no problem
+No pain no gain
+There is no good in this
+There is no hope or love
+There is no hope nor love
+no love or hate
+no crime or violence
+no, good
+no
+No
+no no no
+no bad
+no happy
+No fear, only love
+He has no friends or joy
+There was no excitement or happiness at all
+not no good
+
+# --- boosters and dampeners, distance 1 to 3, caps booster ---
+very good
+very very good
+very very very good
+so very good
+really very good
+It is really good
+It is REALLY good
+It is really GOOD
+It is REALLY GOOD
+It is Really Good
+It is extremely good
+It is EXTREMELY good
+It is absolutely wonderful
+It is somewhat good
+It is slightly good
+It is barely good
+It is hardly good
+It is almost good
+It is marginally good
+It is very, very good
+The very good movie
+So bad
+so so bad
+Very bad
+VERY bad
+very BAD
+Very Bad
+It is very much good
+It is a very good idea
+It is quite a good idea
+It is the most amazing thing
+It is totally awesome
+It is TOTALLY AWESOME
+uber cool
+Friggin awesome
+effing great
+fucking terrible
+This is more than good
+This is less than good
+It is not very good
+It is not very bad
+It is not very very good
+It is very not good
+It was a major disaster
+It was major
+total disaster
+tremendous fun
+considerable improvement
+just enough good
+kind of good
+sort of good
+kind of bad
+sort of bad
+kinda good
+sorta good
+kindof good
+sortof bad
+kind-of nice
+sort-of nasty
+It was a kind of good movie
+It was kind of a good movie
+It was a little bit sort of good
+It is kind of
+It is kind
+kind
+Kind of
+KIND OF GOOD
+She is a kind person
+He was a kind and caring man
+It is sort of
+sort of
+
+# --- least ---
+At least it is good
+at least it is bad
+at the very least it is good
+at very least good
+The least good option
+The least bad option
+At least good
+very least good
+It is least good
+least
+least bad
+the least
+Least
+At least not bad
+at least it isn't terrible
+
+# --- never so / never this / without doubt ---
+never so good
+never this good
+never so bad
+never this bad
+never been so good
+never was this good
+It was never so good
+It has never been this good!
+never ever so good
+never so very good
+never a good idea
+without doubt good
+without a doubt good
+without any doubt good
+without doubt, great
+Without doubt, an excellent idea
+without much doubt good
+without good
+
+# --- special case idioms ---
+This is the shit
+the shit
+the shit is good
+The bomb
+the bomb!
+It is the bomb.com
+That is bad ass
+bad ass
+badass
+Badass
+BADASS
+He is such a badass
+bus stop
+The bus stop is nice
+at the bus stop it was terrible
+yeah right
+Yeah right, that's great
+Yeah, right
+kiss of death
+It was the kiss of death
+The kiss of death was great
+to die for
+It is to die for
+The cake is to die for
+beating heart
+a beating heart
+My beating heart
+the beating heart of the city
+The shit was bad
+the shit and the bomb
+in the shit
+the shit hits the fan
+It was the bomb and the shit
+She is bad ass and great
+It is so bad ass
+He was not the shit
+
+# --- but, including duplicate valences (reference bug fixed by D6) ---
+good but bad
+bad but good
+good but good
+bad but bad
+good good but bad bad
+good good but good good
+great and great but awful and awful
+The food was good but the service was good
+The food was bad but the service was bad
+The food was good, but the service was bad, but the price was good
+good but
+but good
+but
+BUT good
+GOOD BUT BAD
+good BUT bad
+The movie was great but the ending was great
+nice nice nice but nasty
+excellent excellent but horrible
+love love love but hate
+happy but sad but happy
+I like it. But I hate it.
+It was good, but not great
+It was bad, but not terrible
+good butt bad
+good but... bad
+good, but, bad
+good "but" bad
+good but,bad
+abhor but aches
+abandoned, but accusation
+abhor abhor but aches aches
+abhor and aches but aches and abhor
+lyb but ez
+fav but jj
+aches but abhor
+
+# --- exclamation and question marks ---
+good
+good!
+good!!
+good!!!
+good!!!!
+good!!!!!
+good!!!!!!
+bad!!!!!!
+bad?
+bad??
+bad???
+bad????
+bad?????
+good?
+good??
+good???
+good????
+good?????
+good!?
+good!?!?
+good?!?!?!
+good ! bad !
+Is it good?
+Is it good??
+Is it good???
+Is it good? Is it bad? Is it good?
+What a good day! Really! Wow!
+neutral!!!
+neutral???
+the table!
+
+# --- capitalization ---
+GOOD movie
+good MOVIE
+GOOD MOVIE
+Good Movie
+good movie
+I LOVE this movie but you HATE it
+I love THIS movie
+i LOVE it
+I LOVE IT
+i love it
+GOOD good GOOD good
+good GOOD
+Good GOOD good
+HAPPY sad
+Happy SAD
+THE FOOD IS GOOD
+the food is GOOD
+THE food is good
+THE FOOD is NOT GOOD
+Not VERY good
+Very GOOD
+very GOOD
+VERY good
+GOOD ℂ
+𝐆𝐎𝐎𝐃 day
+GOOD ǅungla
+GOOD İSTANBUL
+GOOD ΟΔΟΣ
+GÜZEL güzel
+ХОРОШО хорошо
+GOOD ÉCOLE
+a1 B2 C3 good
+A GOOD
+123 GOOD
+GOOD 123
+!!GOOD!!
+(GOOD) day
+:) GOOD
+:D GOOD day
+
+# --- emoticons ---
+:)
+:(
+:D
+:d
+:P
+:p
+:-)
+:-(
+;)
+;-)
+:/
+:-/
+:O
+:o
+XD
+xD
+xd
+x-d
+X-D
+D:
+d:
+D=
+d=
+<3
+</3
+:*
+:'(
+>:(
+:3
+:|
+=)
+=(
+8-)
+:-P
+:-p
+:p
+%)
+o.O
+O.o
+O_o
+o_O
+-_-
+\m/
+\o/
+(:
+(-:
+(:O
+:-D
+:-d
+=D
+=d
+;D
+;d
+I am happy :)
+I am sad :(
+I am happy :D
+I am happy :d
+:) I am happy
+:) :) :)
+:( :( :(
+:) :(
+good :)
+bad :(
+not :)
+not :(
+very :)
+VERY :)
+:) but :(
+:( but :)
+:)!
+:)!!!
+:D!!!
+(:)
+a:)
+good:)
+:)good
+::)
+:))
+:)))
+:((
+:-))))
+
+# --- emoji at start, middle, end, adjacent ---
+😊
+😊 good
+good 😊
+good 😊 day
+good😊day
+good😊
+😊good
+😊😊
+😊😊😊
+😊 😊
+😊 😊 😊
+😢
+😢 sad 😢
+😀😁😂
+👍
+👎
+🔥
+💩
+😡
+😍
+💘 and 💋
+💘💋
+  😊
+😊
+x 😊
+x😊
+x 😊 y
+x  😊  y
+\t😊
+😊\t
+a\t😊
+🔛
+🔛 good
+good 🔛
+🔛!
+🔛!!!
+the 🔛 button
+❤️
+❤
+I ❤️ this
+I ❤ this
+I ❤️ this!
+❤️❤️
+♥️
+♥
+☺️
+☺
+☹️
+☹
+😊️
+✔️
+✔
+✌️
+☠️
+☠
+👶🏻
+👍🏽
+🏳️‍🌈
+🇮🇩
+👨‍👩‍👧
+1️⃣
+#️⃣
+good ❤️
+❤️ good
+not ❤️
+VERY ❤️
+LOVE ❤️
+I LOVE 😍
+I love 😍 but 😡
+😍 but 😡
+😡 but 😍
+
+# --- non-ASCII words ---
+café très bon
+naïve but good
+Ünïcödé good
+très good
+good très
+Ñandú is good
+日本語 good
+good 日本語
+これは良い
+عظيم good
+Ελληνικά good
+GOOD ЖЖЖ
+ЖЖЖ good
+ÀÉÎ good
+GOOD ÀÉÎ
+good ß
+GOOD ß
+GOOD STRAẞE
+STRASSE good
+ǆ good
+ǅ good
+ǅ GOOD
+ꟍ good
+
+# --- whitespace ---
+  good
+good  day
+good\tday
+good\t\tday
+good\nday
+good\n\nday
+\tgood\r\n
+good\r\nbad
+ good
+good
+
+\t\n
+\n
+good\u000bday
+good\u000cday
+good\u001cday
+good\u001dday
+good\u001eday
+good\u001fday
+\u001cgood\u001d
+good\u0085day
+good day
+good
+ good
+good day
+good᠎day
+good day
+good day
+good day
+good day
+good day
+good day
+good day
+good day
+good day
+good day
+good day
+good​day
+good day
+good day
+good day
+good day
+good　day
+good﻿day
+good\u0000
+good\u0000 day
+good \u0000
+\u0000good
+\u0000
+ \u0000
+good\u0000bad
+good\u007fday
+good‍day
+good⁠day
+
+# --- punctuation only and punctuation handling ---
+!!!
+...
+?!?
+)))
+((
+:
+::
+.
+!
+?
+-
+--
+---
+!!! ... ???
+good,
+good.
+good;
+good:
+good!
+good?
+(good)
+[good]
+{good}
+"good"
+'good'
+-good-
+--good--
+_good_
+*good*
+~good~
+good...
+good,bad
+good.bad
+good-bad
+good/bad
+good&bad
+(ok)
+ok.
+ok
+OK
+Ok
+oK
+"ok"
+!ok!
+a-b
+a.b
+a b
+ab
+a
+I
+It's good
+It's GOOD
+it's "good"
+it's 'good'
+"it's good"
+good-looking
+well-known
+so-so
+non-stop
+\m/ rock
+\o/ yay
+$:
+%-)
+&-:
+(-:
+(-:O
+`good`
+@good
+#good
+good#
+$good$
+^good^
+|good|
+=good=
++good+
+<good>
+good<3
+
+# --- duplicate lexicon keys ---
+lol
+LOL
+Lol
+lmao
+LMAO
+ok
+OK
+sob
+SOB
+fav
+FAV
+muah
+xp
+XP
+x-p
+:-p
+lol that is good
+ok that is good
+lol but sob
+lmao but lol
+
+# --- numeric lexicon keys ---
+143
+1337
+1432
+143 you
+1337 skills
+I 143 you
+
+# --- long and mixed ---
+This movie was absolutely wonderful!!! The acting was great, the plot was amazing, but the ending was a little bit disappointing. Still, I would not say it was bad at all. 😊
+I really, REALLY hate waiting in line. It is NOT fun, and the staff is rude!!! 😡😡
+Pretty good, not great, but not terrible either; kind of a mixed bag really...
+The pizza was GREAT but the delivery was awful and cold, and the driver didn't even smile :(
+Excellent product, works perfectly, arrived early, very happy with the purchase! Highly recommended :) 👍
+Worst. Service. Ever. I will never come back, never ever. Total waste of money!!!
+meh
+It is what it is.

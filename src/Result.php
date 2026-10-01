@@ -1,47 +1,55 @@
 <?php
 
-namespace SentimentAnalysis;
+declare(strict_types=1);
 
-use SentimentAnalysis\Contracts\ResultInterface;
+namespace Risan\Sentiment;
 
-class Result implements ResultInterface
+use JsonSerializable;
+
+final readonly class Result implements JsonSerializable
 {
-    /**
-     * Sentiment scores.
-     *
-     * @var array
-     */
-    protected $scores;
+    public function __construct(
+        public Label $label,
+        public float $compound,
+        public float $positive,
+        public float $negative,
+        public float $neutral,
+    ) {}
 
-    /**
-     * Create a new instance of Result class.
-     *
-     * @param array $scores
-     */
-    public function __construct(array $scores)
+    public function isPositive(): bool
     {
-        $this->scores = $scores;
+        return $this->label === Label::Positive;
+    }
+
+    public function isNegative(): bool
+    {
+        return $this->label === Label::Negative;
+    }
+
+    public function isNeutral(): bool
+    {
+        return $this->label === Label::Neutral;
     }
 
     /**
-     * Get sentiment scores.
-     *
-     * @return array
+     * @return array{label: string, compound: float, positive: float, negative: float, neutral: float}
      */
-    public function scores()
+    public function toArray(): array
     {
-        return $this->scores;
+        return [
+            'label' => $this->label->value,
+            'compound' => $this->compound,
+            'positive' => $this->positive,
+            'negative' => $this->negative,
+            'neutral' => $this->neutral,
+        ];
     }
 
     /**
-     * Get sentiment category.
-     *
-     * @return string
+     * @return array{label: string, compound: float, positive: float, negative: float, neutral: float}
      */
-    public function category()
+    public function jsonSerialize(): array
     {
-        arsort($this->scores);
-
-        return key($this->scores);
+        return $this->toArray();
     }
 }

@@ -1,0 +1,193 @@
+---
+import { Code, LinkButton } from '@astrojs/starlight/components';
+import { featuredExample, labelCase, phpFloat } from '../lib/data';
+
+const { title, tagline, actions = [] } = Astro.locals.starlightRoute.entry.data.hero ?? {};
+const isHomepage = Astro.locals.starlightRoute.entry.id !== '404';
+const example = featuredExample();
+
+const sample = `use Risan\\Sentiment\\Sentiment;
+
+$result = Sentiment::analyze('${example.text}');
+
+$result->label;    // ${labelCase(example.label)}
+$result->compound; // ${phpFloat(example.compound)}
+$result->positive; // ${phpFloat(example.positive)}`;
+
+const installCommand = 'composer require risan/sentiment-analysis';
+---
+
+<section class:list={['hero', { 'hero-single': !isHomepage }]}>
+  <div class="copy">
+    {isHomepage && <p class="eyebrow">PHP 8.3+ · English &amp; Indonesian · zero dependencies</p>}
+    <h1 id="_top" data-page-title set:html={title} />
+    {tagline && <p class="tagline" set:html={tagline} />}
+
+    {
+      isHomepage && (
+        <div class="install">
+          <code>{installCommand}</code>
+          <button type="button" data-copy={installCommand} aria-label="Copy install command">
+            Copy
+          </button>
+        </div>
+      )
+    }
+
+    <div class="actions">
+      {
+        actions.map(({ link, text, variant }) => (
+          <LinkButton href={link} variant={variant}>
+            {text}
+          </LinkButton>
+        ))
+      }
+    </div>
+  </div>
+
+  {
+    isHomepage && (
+      <div class="sample">
+        <Code code={sample} lang="php" title="analyze.php" wrap />
+      </div>
+    )
+  }
+</section>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('button[data-copy]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(button.dataset.copy ?? '');
+      button.textContent = 'Copied';
+      setTimeout(() => {
+        button.textContent = 'Copy';
+      }, 1600);
+    });
+  });
+</script>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+    padding-block: clamp(1.5rem, 6vw, 4rem) 1rem;
+  }
+
+  .copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: flex-start;
+  }
+
+  .eyebrow {
+    margin: 0;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 999px;
+    font-size: var(--sl-text-xs);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--sl-color-accent-high);
+    background: var(--sl-color-accent-low);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: 'Bricolage Grotesque Variable', var(--__sl-font);
+    font-size: clamp(2.4rem, 1rem + 5vw, 4.25rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+
+  .tagline {
+    margin: 0;
+    max-width: 34rem;
+    font-size: var(--sl-text-lg);
+    color: var(--sl-color-gray-2);
+    text-wrap: pretty;
+  }
+
+  .install {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 100%;
+    padding: 0.35rem 0.35rem 0.35rem 1rem;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 0.75rem;
+    background: var(--sl-color-bg-nav);
+  }
+
+  .install code {
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-white);
+    background: none;
+    padding: 0;
+  }
+
+  .install code::before {
+    content: '$ ';
+    color: var(--sl-color-accent);
+  }
+
+  .install button {
+    flex: none;
+    padding: 0.4rem 0.8rem;
+    border: 0;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    color: var(--sl-color-text-invert);
+    background: var(--sl-color-accent);
+    cursor: pointer;
+  }
+
+  .install button:hover {
+    filter: brightness(1.1);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .sample {
+    min-width: 0;
+    filter: drop-shadow(0 24px 40px color-mix(in srgb, var(--sl-color-accent) 22%, transparent));
+  }
+
+  .sample :global(.expressive-code) {
+    margin: 0;
+  }
+
+  .hero-single {
+    padding-block: clamp(3rem, 12vw, 8rem);
+    text-align: center;
+  }
+
+  .hero-single .copy {
+    align-items: center;
+  }
+
+  .hero-single .actions {
+    justify-content: center;
+  }
+
+  @media (min-width: 64rem) {
+    .hero:not(.hero-single) {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 3.5rem;
+    }
+  }
+</style>

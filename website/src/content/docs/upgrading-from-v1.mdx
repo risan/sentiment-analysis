@@ -1,0 +1,88 @@
+---
+title: Upgrading from v1
+description: Migrate from Sentiment Analysis for PHP 1.x to 2.0. New namespace, new API, a new scoring model, and a side-by-side mapping of old calls to new ones.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Version 2 is a complete rewrite. It has a new namespace, a new API and a different scoring model, so treat the upgrade as a small migration rather than a version bump.
+
+## What changed
+
+| | v1 | v2 |
+|---|---|---|
+| PHP | 5.x era | 8.3 or newer, plus `ext-mbstring` |
+| Namespace | `SentimentAnalysis\` | `Risan\Sentiment\` |
+| Model | Word lists with a naive Bayes-style product | VADER: valence lexicon plus rules for negation, boosters, caps, punctuation, emoji |
+| Languages | English | English and Indonesian |
+| Result | `category()` and `scores()` | a `Result` object with `label`, `compound`, `positive`, `negative`, `neutral` |
+| Customizing | Replace dictionary files and classes | `withWords()`, `withoutWords()`, `withThreshold()` |
+| Interfaces | `Contracts\*Interface` | none: five small final classes |
+
+## Side by side
+
+### Analyzing a text
+
+```php title="v1"
+$analyzer = SentimentAnalysis\Analyzer::withDefaultConfig();
+
+$result = $analyzer->analyze('This PHP package is awesome');
+
+echo $result->category(); // 'positive'
+```
+
+```php title="v2"
+use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('This PHP package is awesome');
+
+echo $result->label->value; // 'positive'
+```
+
+### Getting the scores
+
+```php title="v1"
+$result->scores();
+// ['positive' => ..., 'negative' => ..., 'neutral' => ...]
+```
+
+```php title="v2"
+$result->toArray();
+// ['label' => 'positive', 'compound' => ..., 'positive' => ..., 'negative' => ..., 'neutral' => ...]
+
+$result->positive;
+$result->negative;
+$result->neutral;
+```
+
+### Mapping table
+
+| v1 | v2 |
+|---|---|
+| `Analyzer::withDefaultConfig()` | `Sentiment::analyze($text)`, or `new Analyzer()` |
+| `$analyzer->analyze($text)` | `$analyzer->analyze($text)` (same method name, new `Result`) |
+| `$result->category()` | `$result->label` (a `Label` enum), or `$result->label->value` for the string |
+| `$result->scores()` | `$result->toArray()`, or the typed properties |
+| `$result->scores()['positive']` | `$result->positive` |
+| Custom dictionary files | `$analyzer->withWords([...])` and `withoutWords([...])` |
+
+## Things that behave differently
+
+<Aside type="caution">
+Scores are **not comparable** across versions. The numbers have a different meaning, so do not carry over stored scores or tuned cut-offs.
+</Aside>
+
+- **Scores are no longer probabilities.** In v1 the three scores were normalized to sum to 1 and the category was the largest one. In v2 `positive`, `negative` and `neutral` are ratios of signal in the text, and the label comes from the `compound` score and a [threshold](/guides/thresholds/).
+- **Neutral is a real outcome.** v1 picked the largest of three scores. v2 calls a text neutral when its compound score is close to zero. Empty text and text without any known word are neutral.
+- **Context matters.** `not good`, `very good`, `GOOD!!!` and `good, but…` score differently, where v1 mostly counted words. See [Understanding the scores](/guides/understanding-scores/).
+- **Text handling is stricter and safer.** Invalid UTF-8 never throws, and results do not depend on the host's `mb_internal_encoding()`.
+- **No interfaces to implement.** If you swapped in your own tokenizer, dictionary or validator, move that customization to `withWords()` and `withoutWords()`, or pre-process the text before calling `analyze()`.
+
+## Migration checklist
+
+1. Require PHP 8.3 or newer and run `composer require risan/sentiment-analysis:^2.0`.
+2. Replace `SentimentAnalysis\` imports with `Risan\Sentiment\`.
+3. Replace `Analyzer::withDefaultConfig()` with `Sentiment::analyze()`, or with a shared `new Analyzer()` if you analyze a lot of texts.
+4. Replace `category()` with `$result->label`, and `scores()` with `toArray()` or the properties.
+5. Re-check any cut-offs or stored scores against the new scale. Start with the default [threshold](/guides/thresholds/) and tune from there.
+6. Move custom dictionaries to [`withWords()`](/guides/customizing-the-lexicon/).
