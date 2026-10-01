@@ -21,6 +21,12 @@ describe('Sentiment::analyze', function () {
         expect($result->compound)->toBeGreaterThan(0.0);
     });
 
+    it('gives the scores shown in the README', function () {
+        expect(json_encode(Sentiment::analyze('This package is awesome!')))
+            ->toBe('{"label":"positive","compound":0.6588,"positive":0.594,"negative":0,"neutral":0.406}');
+        expect(Sentiment::analyze('This package is awesome!')->label->value)->toBe('positive');
+    });
+
     it('accepts the language as an enum or as a string code', function () {
         expect(Sentiment::analyze('This is bad', Language::English)->label)->toBe(Label::Negative);
         expect(Sentiment::analyze('This is bad', 'en')->label)->toBe(Label::Negative);

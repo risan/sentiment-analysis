@@ -1,0 +1,191 @@
+[
+    {
+        "text": "This package is awesome!",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.6588,
+        "positive": 0.594,
+        "negative": 0.0,
+        "neutral": 0.406
+    },
+    {
+        "text": "The movie was good.",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.4404,
+        "positive": 0.492,
+        "negative": 0.0,
+        "neutral": 0.508
+    },
+    {
+        "text": "The movie was not good.",
+        "language": "en",
+        "label": "negative",
+        "compound": -0.3412,
+        "positive": 0.0,
+        "negative": 0.376,
+        "neutral": 0.624
+    },
+    {
+        "text": "It isn't bad at all.",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.431,
+        "positive": 0.416,
+        "negative": 0.0,
+        "neutral": 0.584
+    },
+    {
+        "text": "The service was extremely good.",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.4927,
+        "positive": 0.444,
+        "negative": 0.0,
+        "neutral": 0.556
+    },
+    {
+        "text": "The service was kind of good.",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.3832,
+        "positive": 0.343,
+        "negative": 0.0,
+        "neutral": 0.657
+    },
+    {
+        "text": "The plot was good, but the ending was terrible.",
+        "language": "en",
+        "label": "negative",
+        "compound": -0.4939,
+        "positive": 0.149,
+        "negative": 0.317,
+        "neutral": 0.534
+    },
+    {
+        "text": "I LOVE this phone.",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.7125,
+        "positive": 0.622,
+        "negative": 0.0,
+        "neutral": 0.378
+    },
+    {
+        "text": "The concert was great!!!",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.7163,
+        "positive": 0.624,
+        "negative": 0.0,
+        "neutral": 0.376
+    },
+    {
+        "text": "Thanks for the help :)",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.8225,
+        "positive": 0.811,
+        "negative": 0.0,
+        "neutral": 0.189
+    },
+    {
+        "text": "Loved the show 😍",
+        "language": "en",
+        "label": "positive",
+        "compound": 0.7845,
+        "positive": 0.58,
+        "negative": 0.0,
+        "neutral": 0.42
+    },
+    {
+        "text": "Worst day ever 😭",
+        "language": "en",
+        "label": "negative",
+        "compound": -0.802,
+        "positive": 0.0,
+        "negative": 0.643,
+        "neutral": 0.357
+    },
+    {
+        "text": "The meeting is at 3 pm.",
+        "language": "en",
+        "label": "neutral",
+        "compound": 0.0,
+        "positive": 0.0,
+        "negative": 0.0,
+        "neutral": 1.0
+    },
+    {
+        "text": "Filmnya bagus banget!",
+        "language": "id",
+        "label": "positive",
+        "compound": 0.623,
+        "positive": 0.671,
+        "negative": 0.0,
+        "neutral": 0.329
+    },
+    {
+        "text": "Makanannya enak sekali.",
+        "language": "id",
+        "label": "positive",
+        "compound": 0.5095,
+        "positive": 0.622,
+        "negative": 0.0,
+        "neutral": 0.378
+    },
+    {
+        "text": "Pelayanannya tidak ramah.",
+        "language": "id",
+        "label": "negative",
+        "compound": -0.357,
+        "positive": 0.0,
+        "negative": 0.554,
+        "neutral": 0.446
+    },
+    {
+        "text": "Tempatnya nyaman tapi harganya mahal.",
+        "language": "id",
+        "label": "positive",
+        "compound": 0.25,
+        "positive": 0.333,
+        "negative": 0.0,
+        "neutral": 0.667
+    },
+    {
+        "text": "Aku BENCI antrean panjang!!!",
+        "language": "id",
+        "label": "negative",
+        "compound": -0.7656,
+        "positive": 0.0,
+        "negative": 0.652,
+        "neutral": 0.348
+    },
+    {
+        "text": "Hotelnya lumayan, tapi kamarnya kotor.",
+        "language": "id",
+        "label": "negative",
+        "compound": -0.5423,
+        "positive": 0.176,
+        "negative": 0.471,
+        "neutral": 0.353
+    },
+    {
+        "text": "Kamera hp ini keren parah 😍",
+        "language": "id",
+        "label": "positive",
+        "compound": 0.7778,
+        "positive": 0.492,
+        "negative": 0.0,
+        "neutral": 0.508
+    },
+    {
+        "text": "Besok rapat jam 3 sore.",
+        "language": "id",
+        "label": "neutral",
+        "compound": 0.0,
+        "positive": 0.0,
+        "negative": 0.0,
+        "neutral": 1.0
+    }
+]
