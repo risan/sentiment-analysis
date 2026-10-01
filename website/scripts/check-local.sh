@@ -58,6 +58,7 @@ check() {
 
 check / 200
 check /reference/analyzer/ 200
+check /guides/languages/ 200
 check /sitemap-index.xml 200
 check /robots.txt 200
 

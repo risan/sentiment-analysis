@@ -1,0 +1,18 @@
+---
+interface Props {
+  type?: 'note' | 'caution';
+}
+
+const { type = 'note' } = Astro.props;
+const label = type === 'caution' ? 'Caution.' : 'Note.';
+---
+
+<aside
+  class:list={[
+    'my-4 border-l-2 px-3 py-2 text-[14px]',
+    type === 'caution' ? 'border-amber-500 bg-amber-50' : 'border-blue-600 bg-blue-50',
+  ]}
+>
+  <span class="float-left mr-1.5 font-semibold">{label}</span>
+  <slot />
+</aside>

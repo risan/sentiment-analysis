@@ -3,7 +3,7 @@ title: Upgrading from v1
 description: Migrate from Sentiment Analysis for PHP 1.x to 2.0. New namespace, new API, a new scoring model, and a side-by-side mapping of old calls to new ones.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import Note from '../../components/Note.astro';
 
 Version 2 is a complete rewrite. It has a new namespace, a new API and a different scoring model, so treat the upgrade as a small migration rather than a version bump.
 
@@ -23,7 +23,9 @@ Version 2 is a complete rewrite. It has a new namespace, a new API and a differe
 
 ### Analyzing a text
 
-```php title="v1"
+<p class="caption">v1</p>
+
+```php
 $analyzer = SentimentAnalysis\Analyzer::withDefaultConfig();
 
 $result = $analyzer->analyze('This PHP package is awesome');
@@ -31,7 +33,9 @@ $result = $analyzer->analyze('This PHP package is awesome');
 echo $result->category(); // 'positive'
 ```
 
-```php title="v2"
+<p class="caption">v2</p>
+
+```php
 use Risan\Sentiment\Sentiment;
 
 $result = Sentiment::analyze('This PHP package is awesome');
@@ -41,12 +45,16 @@ echo $result->label->value; // 'positive'
 
 ### Getting the scores
 
-```php title="v1"
+<p class="caption">v1</p>
+
+```php
 $result->scores();
 // ['positive' => ..., 'negative' => ..., 'neutral' => ...]
 ```
 
-```php title="v2"
+<p class="caption">v2</p>
+
+```php
 $result->toArray();
 // ['label' => 'positive', 'compound' => ..., 'positive' => ..., 'negative' => ..., 'neutral' => ...]
 
@@ -68,9 +76,9 @@ $result->neutral;
 
 ## Things that behave differently
 
-<Aside type="caution">
+<Note type="caution">
 Scores are **not comparable** across versions. The numbers have a different meaning, so do not carry over stored scores or tuned cut-offs.
-</Aside>
+</Note>
 
 - **Scores are no longer probabilities.** In v1 the three scores were normalized to sum to 1 and the category was the largest one. In v2 `positive`, `negative` and `neutral` are ratios of signal in the text, and the label comes from the `compound` score and a [threshold](/guides/thresholds/).
 - **Neutral is a real outcome.** v1 picked the largest of three scores. v2 calls a text neutral when its compound score is close to zero. Empty text and text without any known word are neutral.

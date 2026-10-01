@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Source of public/og.png (1200x630). Render it with:
+  Source of public/og.png (1200x630). Run npm ci first (the fonts come from node_modules), then render it with:
   chrome-headless-shell --no-sandbox --hide-scrollbars --window-size=1200,630 \
     --screenshot=public/og.png file://$PWD/og-source/og.html
 -->
@@ -9,19 +9,19 @@
     <meta charset="utf-8" />
     <style>
       @font-face {
-        font-family: 'Bricolage';
-        src: url('../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2');
-        font-weight: 200 800;
+        font-family: 'Plex Sans';
+        src: url('../node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2');
+        font-weight: 100 700;
       }
       @font-face {
-        font-family: 'Inter';
-        src: url('../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2');
-        font-weight: 100 900;
+        font-family: 'Plex Mono';
+        src: url('../node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2');
+        font-weight: 400;
       }
       @font-face {
-        font-family: 'Mono';
-        src: url('../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2');
-        font-weight: 100 800;
+        font-family: 'Plex Mono';
+        src: url('../node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2');
+        font-weight: 500;
       }
       * {
         box-sizing: border-box;
@@ -31,131 +31,49 @@
         width: 1200px;
         height: 630px;
         overflow: hidden;
-        font-family: 'Inter', sans-serif;
-        color: #e8f0ef;
-        background:
-          radial-gradient(700px 420px at 92% -8%, rgba(20, 220, 190, 0.28), transparent 70%),
-          radial-gradient(520px 320px at -4% 104%, rgba(240, 190, 70, 0.14), transparent 70%), #081213;
-        padding: 64px 72px;
-        display: grid;
-        grid-template-columns: 1fr 440px;
-        gap: 56px;
-        align-items: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 64px 88px;
+        font-family: 'Plex Sans', sans-serif;
+        color: #18181b;
+        background: #fff;
       }
       .brand {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        font-family: 'Bricolage', sans-serif;
-        font-weight: 700;
+        font-family: 'Plex Mono', monospace;
+        font-weight: 500;
         font-size: 28px;
-        letter-spacing: -0.02em;
-        margin-bottom: 36px;
-      }
-      .brand img {
-        width: 52px;
-        height: 52px;
       }
       h1 {
-        font-family: 'Bricolage', sans-serif;
-        font-weight: 750;
-        font-size: 70px;
-        line-height: 1;
-        letter-spacing: -0.035em;
-        color: #fff;
-      }
-      h1 span {
-        color: #2dd4bf;
+        font-weight: 600;
+        font-size: 80px;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
       }
       p {
         margin-top: 28px;
-        font-size: 28px;
+        max-width: 860px;
+        font-size: 32px;
         line-height: 1.4;
-        color: #a8b9b6;
-        max-width: 560px;
+        color: #52525b;
       }
-      .url {
-        margin-top: 40px;
-        font-family: 'Mono', monospace;
-        font-size: 22px;
-        color: #2dd4bf;
-      }
-      .card {
-        border: 1px solid #27403f;
-        border-radius: 24px;
-        background: #0e1c1d;
-        padding: 32px;
-        box-shadow: 0 30px 80px rgba(20, 220, 190, 0.16);
-      }
-      .text {
-        font-size: 24px;
-        line-height: 1.35;
-        font-weight: 500;
-        color: #fff;
-        margin-bottom: 28px;
-      }
-      .row {
-        display: grid;
-        grid-template-columns: 110px 1fr 76px;
-        align-items: center;
-        gap: 14px;
-        margin-top: 16px;
-        font-size: 20px;
-        color: #a8b9b6;
-      }
-      .row b {
-        font-family: 'Mono', monospace;
-        font-weight: 600;
-        font-size: 20px;
-        text-align: right;
-        color: #e8f0ef;
-      }
-      .bar {
-        height: 12px;
-        border-radius: 999px;
-        background: #1c2f30;
-        overflow: hidden;
-      }
-      .bar i {
-        display: block;
-        height: 100%;
-        border-radius: 999px;
-      }
-      .pos i {
-        background: #34d27f;
-      }
-      .neu i {
-        background: #f0bf46;
-      }
-      .neg i {
-        background: #f26b55;
-      }
-      .label {
-        display: inline-block;
-        margin-bottom: 20px;
-        padding: 6px 16px;
-        border-radius: 999px;
-        font-size: 20px;
-        font-weight: 600;
-        color: #bdf5d6;
-        background: #123a29;
+      .install {
+        align-self: flex-start;
+        padding: 16px 24px;
+        border: 2px solid #e4e4e7;
+        background: #fafafa;
+        font-family: 'Plex Mono', monospace;
+        font-size: 28px;
+        white-space: nowrap;
       }
     </style>
   </head>
   <body>
+    <div class="brand">sentiment-analysis</div>
     <div>
-      <div class="brand"><img src="../public/favicon.svg" alt="" /> Sentiment Analysis</div>
-      <h1>Sentiment analysis<br />for <span>PHP</span></h1>
-      <p>English and Indonesian. VADER-based, zero dependencies, no API.</p>
-      <div class="url">sentiment-analysis.risanb.com</div>
+      <h1>Sentiment analysis<br />for PHP</h1>
+      <p>Scores English and Indonesian text as positive, negative or neutral. No API calls, no dependencies.</p>
     </div>
-    <div class="card">
-      <span class="label">positive</span>
-      <div class="text">VADER is smart, handsome, and funny.</div>
-      <div class="row pos"><span>compound</span><div class="bar"><i style="width: 83.16%"></i></div><b>0.8316</b></div>
-      <div class="row pos"><span>positive</span><div class="bar"><i style="width: 74.6%"></i></div><b>0.746</b></div>
-      <div class="row neu"><span>neutral</span><div class="bar"><i style="width: 25.4%"></i></div><b>0.254</b></div>
-      <div class="row neg"><span>negative</span><div class="bar"><i style="width: 0%"></i></div><b>0.0</b></div>
-    </div>
+    <div class="install">composer require risan/sentiment-analysis</div>
   </body>
 </html>
