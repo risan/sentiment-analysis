@@ -28,14 +28,14 @@ use Risan\Sentiment\Language;
 
 $analyzer = (new Analyzer(Language::Indonesian))
     ->withWords([
-        'mantul' => 2.5,
-        'zonk' => -2.0,
+        'cuan' => 2.5,
+        'bapuk' => -2.0,
     ]);
 
-$analyzer->analyze('Konsernya mantul!')->isPositive(); // true
+$analyzer->analyze('Investasinya cuan!')->isPositive(); // true
 ```
 
-Keys are lower-cased for you, and matching ignores the case of the text, so `mantul`, `Mantul` and `MANTUL` all hit the same entry. Values can be ints or floats.
+Keys are lower-cased for you, and matching ignores the case of the text, so `cuan`, `Cuan` and `CUAN` all hit the same entry. Values can be ints or floats.
 
 Override a word that does not fit your domain:
 
@@ -85,3 +85,5 @@ Build your customized analyzer once (a service container binding or a static pro
 ## Words that are also rules
 
 Negations (`not`, `tidak`) and intensifiers (`very`, `sangat`) are part of the language rules, not the lexicon. Use `withWords()` for words that carry sentiment. Everything else, including emoticons such as `:)` and slang, is a normal lexicon entry.
+
+Do not give a negation or an intensifier a valence with `withWords()`. As in VADER, the word then becomes a lexicon word and its behavior changes: a `very` with a valence no longer strengthens the word after it, and a `not` with a valence adds a score of its own. Leave these words out of `withWords()`.
