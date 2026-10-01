@@ -1,0 +1,111 @@
+---
+import { Code } from 'astro:components';
+import ResultsTable from '../components/ResultsTable.astro';
+import { metrics } from '../lib/data';
+import { repoUrl } from '../lib/nav';
+import Base from '../layouts/Base.astro';
+
+const title = 'Sentiment Analysis for PHP: English and Indonesian';
+const description =
+  'Fast, dependency-free sentiment analysis for PHP 8.3+. VADER-based scoring for English and Indonesian that understands negation, intensifiers, emoji and emoticons. MIT licensed.';
+const installCommand = 'composer require risan/sentiment-analysis';
+
+const example = `use Risan\\Sentiment\\Sentiment;
+
+Sentiment::analyze('Not bad at all!')->label;             // Label::Positive
+Sentiment::analyze('Filmnya bagus banget!', 'id')->label; // Label::Positive`;
+
+const phpVersion = metrics.benchmark.phpVersion.split('.').slice(0, 2).join('.');
+const shortTexts = metrics.benchmark.shortTextsPerSecond.toLocaleString('en-US');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: 'Sentiment Analysis for PHP',
+  description:
+    'Fast, dependency-free sentiment analysis for PHP 8.3+ with VADER-based scoring for English and Indonesian.',
+  url: 'https://sentiment-analysis.risanb.com',
+  codeRepository: repoUrl,
+  programmingLanguage: 'PHP',
+  runtimePlatform: 'PHP 8.3+',
+  license: 'https://opensource.org/license/mit',
+  author: {
+    '@type': 'Person',
+    name: 'Risan Bagja Pradana',
+    url: 'https://github.com/risan',
+  },
+};
+---
+
+<Base title={title} description={description}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+    <h1 class="text-[28px] leading-tight font-semibold">Sentiment analysis for PHP</h1>
+    <p class="mt-2 max-w-2xl text-zinc-700">
+      Scores English and Indonesian text as positive, negative or neutral. Pure PHP 8.3+, no API calls, no dependencies.
+    </p>
+
+    <div class="mt-4 flex max-w-md items-center justify-between gap-3 border border-zinc-200 bg-zinc-50 py-1 pr-1 pl-3 font-mono text-[13px]">
+      <code class="overflow-x-auto whitespace-nowrap">{installCommand}</code>
+      <button
+        type="button"
+        data-copy={installCommand}
+        class="cursor-pointer border border-zinc-300 bg-white px-2 py-0.5 font-sans text-xs text-zinc-700 hover:border-zinc-400 hover:text-zinc-900"
+      >
+        Copy
+      </button>
+    </div>
+    <p class="mt-3 flex gap-4 text-sm">
+      <a href="/getting-started/introduction/" class="text-blue-700 hover:underline">Read the docs →</a>
+      <a href={repoUrl} class="text-blue-700 hover:underline">GitHub</a>
+    </p>
+
+    <div class="docs mt-6">
+      <Code code={example} lang="php" theme="github-light" />
+    </div>
+
+    <section class="mt-8">
+      <h2 class="text-lg font-semibold">See how it scores</h2>
+      <p class="mt-1 text-sm text-zinc-600">
+        <code class="font-mono text-[13px]">compound</code> runs from -1 to +1. The label uses ±0.05.
+      </p>
+      <div class="grid gap-x-8 lg:grid-cols-2">
+        <div>
+          <p class="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">English</p>
+          <ResultsTable language="en" compact />
+        </div>
+        <div>
+          <p class="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">Indonesian</p>
+          <ResultsTable language="id" compact />
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8">
+      <h2 class="text-lg font-semibold">What it handles</h2>
+      <ul class="mt-2 list-disc space-y-0.5 pl-5">
+        <li>Negation: "not good" is negative, "not bad at all" is positive.</li>
+        <li>Intensifiers: "very", "kind of", "banget".</li>
+        <li>Contrast: what follows "but" or "tapi" carries more weight.</li>
+        <li>CAPS and "!!!" add emphasis.</li>
+        <li>Emoji and emoticons.</li>
+        <li>Custom words and thresholds.</li>
+        <li>About {shortTexts} short texts per second on PHP {phpVersion}.</li>
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-copy]');
+
+  button?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(button.dataset.copy ?? '');
+    button.textContent = 'Copied';
+
+    setTimeout(() => {
+      button.textContent = 'Copy';
+    }, 1500);
+  });
+</script>

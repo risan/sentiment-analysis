@@ -3,7 +3,7 @@ title: Sentiment
 description: API reference for Risan\Sentiment\Sentiment, the static one-liner for analyzing text with a shared default analyzer per language.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import Note from '../../../components/Note.astro';
 
 ```php
 use Risan\Sentiment\Sentiment;
@@ -13,9 +13,9 @@ use Risan\Sentiment\Sentiment;
 
 The class has a private constructor and cannot be instantiated. For custom words or thresholds, use [`Analyzer`](/reference/analyzer/) directly.
 
-<Aside>
+<Note>
 Only `Sentiment`, `Analyzer`, `Result`, `Label` and `Language` are public API. Everything under `Risan\Sentiment\Internal` is marked `@internal` and may change in any release.
-</Aside>
+</Note>
 
 ## Methods
 

@@ -14,13 +14,16 @@
     "check:local": "bash scripts/check-local.sh"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.42.5",
-    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
-    "@fontsource-variable/inter": "^5.3.0",
-    "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "astro": "^7.3.5"
+    "@astrojs/mdx": "^8.0.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.5",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "wrangler": "4.145.0"
+    "wrangler": "4.146.0"
   }
 }

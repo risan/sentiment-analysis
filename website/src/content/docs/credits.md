@@ -33,4 +33,4 @@ Indonesian accuracy is measured on the **IndoNLU SmSA** sentiment dataset, part 
 
 ## Built with
 
-This website is built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build), and served as static assets from [Cloudflare Workers](https://workers.cloudflare.com).
+This website is built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com), and served as static assets from [Cloudflare Workers](https://workers.cloudflare.com).

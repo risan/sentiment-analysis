@@ -1,0 +1,198 @@
+@import '@fontsource-variable/ibm-plex-sans/wght.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html {
+  color-scheme: light;
+  scroll-padding-top: 3.5rem;
+}
+
+.docs {
+  --tw-prose-body: var(--color-zinc-800);
+  --tw-prose-headings: var(--color-zinc-900);
+  --tw-prose-links: var(--color-blue-700);
+  --tw-prose-bold: var(--color-zinc-900);
+  --tw-prose-code: var(--color-zinc-900);
+  --tw-prose-th-borders: var(--color-zinc-300);
+  --tw-prose-td-borders: var(--color-zinc-200);
+  --tw-prose-bullets: var(--color-zinc-400);
+  --tw-prose-counters: var(--color-zinc-500);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.docs :where(p, ul, ol) {
+  margin-block: 0.85em;
+}
+
+.docs :where(li) {
+  margin-block: 0.2em;
+}
+
+.docs :where(h2) {
+  margin-top: 1.9em;
+  margin-bottom: 0.5em;
+  font-size: 1.2em;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.docs :where(h3) {
+  margin-top: 1.5em;
+  margin-bottom: 0.4em;
+  font-size: 1em;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.docs a {
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.docs a:hover {
+  text-decoration: underline;
+}
+
+.docs code {
+  font-weight: 400;
+  font-size: 0.875em;
+}
+
+.docs :not(pre) > code {
+  padding: 0.1em 0.2em;
+  border-radius: 2px;
+  background: var(--color-zinc-100);
+}
+
+.docs :not(pre) > code::before,
+.docs :not(pre) > code::after {
+  content: none;
+}
+
+.docs a > code {
+  color: inherit;
+}
+
+.docs pre {
+  margin-block: 1em;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 2px;
+  background: var(--color-zinc-50) !important;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.docs pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.docs .caption {
+  margin: 1.2em 0 0.25em;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-zinc-500);
+}
+
+.docs .caption + pre {
+  margin-top: 0;
+}
+
+.docs aside p {
+  margin: 0;
+}
+
+.docs aside p + p {
+  margin-top: 0.5rem;
+}
+
+.docs table {
+  display: block;
+  overflow-x: auto;
+  margin-block: 1em;
+  width: 100%;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.docs :where(th, td) {
+  padding: 0.35rem 0.75rem 0.35rem 0;
+  vertical-align: top;
+}
+
+.docs :where(th) {
+  font-weight: 600;
+  color: var(--color-zinc-900);
+}
+
+.docs table code {
+  font-size: 12.5px;
+}
+
+.results-wrap {
+  margin-block: 0.75em;
+  overflow-x: auto;
+}
+
+.results-wrap .results {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.results-wrap .results :where(th, td) {
+  padding: 0.3rem 0.75rem 0.3rem 0;
+  text-align: left;
+  vertical-align: baseline;
+  border-bottom: 1px solid var(--color-zinc-200);
+}
+
+.results-wrap .results :where(th) {
+  font-weight: 600;
+  border-bottom-color: var(--color-zinc-300);
+}
+
+.results-wrap .results :where(.num) {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.results-wrap .results :where(th.num) {
+  font-family: inherit;
+}
+
+.results-wrap .results :where(td:last-child, th:last-child) {
+  padding-right: 0;
+}
+
+.results-wrap .lang {
+  margin-left: 0.5rem;
+  color: var(--color-zinc-500);
+}
+
+.results-wrap .label-positive {
+  color: var(--color-green-700);
+}
+
+.results-wrap .label-negative {
+  color: var(--color-red-700);
+}
+
+.results-wrap .label-neutral {
+  color: var(--color-zinc-500);
+}

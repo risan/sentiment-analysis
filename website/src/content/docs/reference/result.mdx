@@ -3,7 +3,7 @@ title: Result
 description: API reference for Risan\Sentiment\Result, the immutable value object returned by every analysis, with label, compound, positive, negative and neutral scores.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import Note from '../../../components/Note.astro';
 
 ```php
 use Risan\Sentiment\Result;
@@ -33,9 +33,9 @@ $result->neutral;  // 0.254
 
 `positive`, `negative` and `neutral` add up to about 1. Empty text gives `0.0` for the compound and all three ratios. See [Understanding the scores](/guides/understanding-scores/).
 
-<Aside type="note">
+<Note>
 The compound score is never `-0.0`. A negative zero is normalized to `0.0`.
-</Aside>
+</Note>
 
 ## Methods
 
