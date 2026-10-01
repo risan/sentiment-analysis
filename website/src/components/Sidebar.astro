@@ -13,7 +13,7 @@ const { current, titles } = Astro.props;
   {
     navGroups.map((group) => (
       <div>
-        {group.label && <p class="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">{group.label}</p>}
+        {group.label && <p class="mb-1 text-xs font-medium uppercase tracking-wide text-stone-500">{group.label}</p>}
         <ul>
           {group.slugs.map((slug) => (
             <li>
@@ -23,8 +23,8 @@ const { current, titles } = Astro.props;
                 class:list={[
                   'block border-l-2 py-0.5 pl-3',
                   slug === current
-                    ? 'border-zinc-900 font-semibold text-zinc-900'
-                    : 'border-transparent text-zinc-600 hover:text-zinc-900',
+                    ? 'border-stone-900 font-semibold text-stone-900'
+                    : 'border-transparent text-stone-600 hover:text-stone-900',
                 ]}
               >
                 {titles[slug]}
