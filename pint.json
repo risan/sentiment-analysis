@@ -1,0 +1,7 @@
+{
+    "preset": "per",
+    "exclude": ["resources"],
+    "rules": {
+        "declare_strict_types": true
+    }
+}

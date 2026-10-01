@@ -1,0 +1,43 @@
+# Indonesian sentiment lexicon, authored for this package (MIT). One word per line: word<TAB>valence.
+# Valence scale as VADER: -4..4; anchors +-0.5 faint, +-1.5 mild, +-2.5 clear, +-3.5 extreme.
+# No neutral entries and no negation or booster words, except the dual-role words `parah` and `lumayan`.
+# Never copy from other lexicons (InSet, SentiStrength-ID and Kamus Alay carry no license).
+bagus	2.5
+baik	2.0
+bahagia	2.5
+senang	2.2
+suka	1.8
+cinta	3.0
+keren	2.5
+mantap	2.5
+mantul	2.5
+indah	2.5
+cantik	2.2
+lezat	2.5
+enak	2.0
+nyaman	2.0
+puas	2.0
+memuaskan	2.2
+ramah	2.0
+murah	1.0
+lumayan	1.0
+terbaik	3.0
+sempurna	3.0
+hebat	2.5
+jelek	-2.5
+buruk	-2.5
+sedih	-2.2
+marah	-2.2
+benci	-3.0
+kecewa	-2.2
+mengecewakan	-2.5
+parah	-2.5
+zonk	-2.0
+kasar	-2.0
+bodoh	-2.5
+lambat	-1.5
+kotor	-2.0
+rusak	-2.2
+menyebalkan	-2.5
+takut	-1.8
+bohong	-2.0

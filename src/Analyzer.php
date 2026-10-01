@@ -1,240 +1,158 @@
 <?php
 
-namespace SentimentAnalysis;
+declare(strict_types=1);
 
-use SentimentAnalysis\Contracts\AnalyzerInterface;
-use SentimentAnalysis\Contracts\TokenizerInterface;
-use SentimentAnalysis\Contracts\DictionaryInterface;
-use SentimentAnalysis\Contracts\TokenValidatorInterface;
+namespace Risan\Sentiment;
 
-class Analyzer implements AnalyzerInterface
+use InvalidArgumentException;
+use Risan\Sentiment\Internal\Engine;
+use Risan\Sentiment\Internal\RuleBook;
+
+/**
+ * Immutable: every with*() method returns a modified copy.
+ */
+final class Analyzer
 {
-    /**
-     * Sentiment categories.
-     *
-     * @var array
-     */
-    protected $categories = [
-        'positive',
-        'negative',
-        'neutral',
-    ];
+    private const float MAX_VALENCE = 4.0;
 
-    /**
-     * Prior probalbility of each category.
-     *
-     * @var array
-     */
-    protected $priorProbability = [
-        'positive' => 0.333333333333,
-        'negative' => 0.333333333333,
-        'neutral' => 0.333333333334,
-    ];
+    private Language $language;
 
-    /**
-     * Dictionary instance.
-     *
-     * @var \SentimentAnalysis\Contracts\DictionaryInterface
-     */
-    protected $dictionary;
+    private float $threshold;
 
-    /**
-     * Tokenizer instance.
-     *
-     * @var \SentimentAnalysis\Contracts\TokenizerInterface
-     */
-    protected $tokenizer;
+    private Engine $engine;
 
-    /**
-     * Token validator instance.
-     *
-     * @var \SentimentAnalysis\Contracts\TokenValidatorInterface
-     */
-    protected $tokenValidator;
+    public function __construct(Language|string $language = Language::English, float $threshold = 0.05)
+    {
+        self::assertThreshold($threshold);
 
-    /**
-     * Create a new instance of Analyzer class.
-     *
-     * @param \SentimentAnalysis\Contracts\DictionaryInterface     $dictionary
-     * @param \SentimentAnalysis\Contracts\TokenizerInterface      $tokenizer
-     * @param \SentimentAnalysis\Contracts\TokenValidatorInterface $tokenValidator
-     */
-    public function __construct(
-        DictionaryInterface $dictionary,
-        TokenizerInterface $tokenizer,
-        TokenValidatorInterface $tokenValidator
-    ) {
-        $this->dictionary = $dictionary;
-        $this->tokenizer = $tokenizer;
-        $this->tokenValidator = $tokenValidator;
+        $this->language = $language instanceof Language ? $language : Language::from($language);
+        $this->threshold = $threshold;
+        $this->engine = new Engine(RuleBook::for($this->language));
     }
 
-    /**
-     * Get dictionary instance.
-     *
-     * @return \SentimentAnalysis\Contracts\DictionaryInterface
-     */
-    public function dictionary()
+    public function analyze(string $text): Result
     {
-        return $this->dictionary;
-    }
+        $scores = $this->engine->polarity($text);
+        $compound = self::round($scores['compound'], 4);
 
-    /**
-     * Get tokenizer instance.
-     *
-     * @return \SentimentAnalysis\Contracts\TokenizerInterface
-     */
-    public function tokenizer()
-    {
-        return $this->tokenizer;
-    }
-
-    /**
-     * Get token validator instance.
-     *
-     * @return \SentimentAnalysis\Contracts\TokenValidatorInterface
-     */
-    public function tokenValidator()
-    {
-        return $this->tokenValidator;
-    }
-
-    /**
-     * Analyze document.
-     *
-     * @param string $document
-     *
-     * @return \SentimentAnalysis\Contracts\ResultInterface
-     */
-    public function analyze($document)
-    {
-        $tokens = $this->cleanUpAndTokenizeDocument($document);
-
-        $scores = [];
-
-        foreach ($this->categories as $category) {
-            $scores[$category] = $this->calculateTokensScore($tokens, $category);
-        }
-
-        $scores = $this->normalizeScoreValues($scores);
-
-        return new Result($scores);
-    }
-
-    /**
-     * Clean up and tokenize document.
-     *
-     * @param string $document
-     *
-     * @return array
-     */
-    protected function cleanUpAndTokenizeDocument($document)
-    {
-        $document = $this->removeWhiteSpaceAfterNegationWords($document);
-
-        return $this->tokenizer()->tokenize($document);
-    }
-
-    /**
-     * Remove white space after negation words.
-     *
-     * @param string $document
-     *
-     * @return string
-     */
-    protected function removeWhiteSpaceAfterNegationWords($document)
-    {
-        foreach ($this->dictionary()->negationWords() as $negationWord) {
-            if (strpos($document, $negationWord) !== false) {
-                $document = str_replace("{$negationWord} ", $negationWord, $document);
-            }
-        }
-
-        return $document;
-    }
-
-    /**
-     * Calculate tokens score.
-     *
-     * @param array  $tokens
-     * @param string $category
-     *
-     * @return float
-     */
-    protected function calculateTokensScore(array $tokens, $category)
-    {
-        $score = 1;
-
-        foreach ($tokens as $token) {
-            if (!$this->shouldTokenBeCalculated($token)) {
-                continue;
-            }
-
-            $count = $this->isTokenFoundOnCategory($token, $category) ? 1 : 0;
-
-            $score *= ($count + 1);
-        }
-
-        return $score * $this->priorProbability[$category];
-    }
-
-    /**
-     * Check whether token should be calculated or not.
-     *
-     * @param string $token
-     *
-     * @return bool
-     */
-    protected function shouldTokenBeCalculated($token)
-    {
-        return $this->tokenValidator()->shouldBeCalculated(
-            $token,
-            $this->dictionary()->ignoredWords()
+        return new Result(
+            label: $this->labelFor($compound),
+            compound: $compound,
+            positive: self::round($scores['positive'], 3),
+            negative: self::round($scores['negative'], 3),
+            neutral: self::round($scores['neutral'], 3),
         );
     }
 
     /**
-     * Check whether token is found on the given dictionary category.
+     * Adds words to the lexicon or overrides their valence, on VADER's -4..4 scale.
      *
-     * @param string $token
-     * @param string $category
+     * @param array<array-key, float|int> $words word => valence; words are lower-cased
      *
-     * @return bool
+     * @throws InvalidArgumentException for an empty word, a word with whitespace or a valence outside -4..4
      */
-    protected function isTokenFoundOnCategory($token, $category)
+    public function withWords(array $words): static
     {
-        return $this->dictionary()->isWordFoundOnCategory($token, $category);
-    }
+        $lexicon = $this->engine->rules->lexicon;
 
-    /**
-     * Normalize score values.
-     *
-     * @param array $scores
-     *
-     * @return array
-     */
-    protected function normalizeScoreValues(array $scores)
-    {
-        $totalScore = array_sum($scores);
-
-        foreach ($this->categories as $category) {
-            $scores[$category] = round($scores[$category] / $totalScore, 3, 10);
+        foreach ($words as $key => $valence) {
+            $lexicon[self::normalizeWord((string) $key)] = self::assertValence($valence, (string) $key);
         }
 
-        return $scores;
+        return $this->withLexicon($lexicon);
     }
 
     /**
-     * Create analyzer instance with default configuration.
-     *
-     * @return \SentimentAnalysis\Contracts\AnalyzerInterface
+     * @param list<string> $words
      */
-    public static function withDefaultConfig()
+    public function withoutWords(array $words): static
     {
-        return new static(
-            new Dictionary(__DIR__.'/data'),
-            new Tokenizer(),
-            new TokenValidator()
-        );
+        $lexicon = $this->engine->rules->lexicon;
+
+        foreach ($words as $word) {
+            unset($lexicon[mb_strtolower($word, 'UTF-8')]);
+        }
+
+        return $this->withLexicon($lexicon);
+    }
+
+    /**
+     * @throws InvalidArgumentException when the threshold is outside [0, 1)
+     */
+    public function withThreshold(float $threshold): static
+    {
+        self::assertThreshold($threshold);
+
+        $copy = clone $this;
+        $copy->threshold = $threshold;
+
+        return $copy;
+    }
+
+    public function language(): Language
+    {
+        return $this->language;
+    }
+
+    /**
+     * @param array<array-key, float> $lexicon
+     */
+    private function withLexicon(array $lexicon): static
+    {
+        $copy = clone $this;
+        $copy->engine = new Engine($this->engine->rules->withLexicon($lexicon));
+
+        return $copy;
+    }
+
+    private function labelFor(float $compound): Label
+    {
+        if ($compound > 0.0 && $compound >= $this->threshold) {
+            return Label::Positive;
+        }
+
+        if ($compound < 0.0 && $compound <= -$this->threshold) {
+            return Label::Negative;
+        }
+
+        return Label::Neutral;
+    }
+
+    /**
+     * Rounds like Python's round(), which round() in PHP does not: sprintf uses
+     * correctly rounded decimal conversion for both.
+     */
+    private static function round(float $value, int $decimals): float
+    {
+        $rounded = (float) sprintf("%.{$decimals}F", $value);
+
+        return $rounded === 0.0 ? 0.0 : $rounded;
+    }
+
+    private static function assertThreshold(float $threshold): void
+    {
+        if (!($threshold >= 0.0 && $threshold < 1.0)) {
+            throw new InvalidArgumentException('The threshold must be at least 0 and below 1.');
+        }
+    }
+
+    private static function normalizeWord(string $word): string
+    {
+        $word = mb_strtolower($word, 'UTF-8');
+
+        if ($word === '' || preg_match('/' . Engine::WHITESPACE . '/u', $word) !== 0) {
+            throw new InvalidArgumentException('A lexicon word must be a non-empty string without whitespace.');
+        }
+
+        return $word;
+    }
+
+    private static function assertValence(mixed $valence, string $word): float
+    {
+        if ((!is_int($valence) && !is_float($valence)) || !is_finite($valence) || abs($valence) > self::MAX_VALENCE) {
+            throw new InvalidArgumentException("The valence of \"{$word}\" must be a number from -4 to 4.");
+        }
+
+        return (float) $valence;
     }
 }
