@@ -82,9 +82,14 @@ describe('Indonesian lexicon', function () {
         $this->lexicon = require dirname(__DIR__, 2) . '/resources/id/lexicon.php';
     });
 
-    it('has at least 2,500 words, all scored within VADER\'s range and none neutral', function () {
-        expect(count($this->lexicon))->toBeGreaterThanOrEqual(2500);
+    it('has at least 2,500 authored words', function () {
+        $lines = file(dirname(__DIR__, 2) . '/tools/data/id/lexicon.tsv', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $authored = array_filter($lines, fn(string $line): bool => $line[0] !== '#');
 
+        expect(count($authored))->toBeGreaterThanOrEqual(2500);
+    });
+
+    it('scores every word within VADER\'s range and none as neutral', function () {
         foreach ($this->lexicon as $word => $valence) {
             expect($valence)->not->toBe(0.0, (string) $word);
             expect(abs($valence))->toBeLessThanOrEqual(4.0, (string) $word);
@@ -95,6 +100,11 @@ describe('Indonesian lexicon', function () {
         expect($this->lexicon)->toHaveKey('heart');
         expect($this->lexicon)->toHaveKey(':)');
         expect($this->lexicon)->not->toHaveKey('no');
+    });
+
+    it('does not borrow English initialisms such as j/k', function () {
+        expect($this->lexicon)->not->toHaveKey('j/k');
+        expect($this->lexicon)->not->toHaveKey('r&r');
     });
 });
 
