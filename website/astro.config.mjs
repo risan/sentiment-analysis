@@ -35,7 +35,7 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: 'https://github.com/risan/sentiment-analysis/edit/master/website/',
+        baseUrl: 'https://github.com/risan/sentiment-analysis/edit/main/website/',
       },
       customCss: [
         '@fontsource-variable/inter',

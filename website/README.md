@@ -30,11 +30,13 @@ Precondition: the `risanb.com` zone is in your Cloudflare account. `wrangler.jso
 Either:
 
 1. **Workers Builds (recommended).** In the Cloudflare dashboard, go to Workers & Pages, create a Worker from this Git repository, and set:
+   - project name: `sentiment-analysis` (must equal `name` in `wrangler.jsonc`)
+   - production branch: `main`
    - root directory: `website`
    - build command: `npm ci && npm run build`
    - deploy command: `npx wrangler deploy`
 
-   Every push to the production branch then deploys.
+   Node 24 comes from `.node-version`. Every push to `main` then deploys.
 
 2. **From your machine.**
 

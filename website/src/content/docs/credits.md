@@ -5,7 +5,7 @@ description: The people and data behind Sentiment Analysis for PHP. VADER by C.J
 
 ## License
 
-Sentiment Analysis for PHP is open source software released under the **MIT License**. Free for personal and commercial use. The full text is in [`LICENSE.md`](https://github.com/risan/sentiment-analysis/blob/master/LICENSE.md).
+Sentiment Analysis for PHP is open source software released under the **MIT License**. Free for personal and commercial use. The full text is in [`LICENSE.md`](https://github.com/risan/sentiment-analysis/blob/main/LICENSE.md).
 
 Created and maintained by [Risan Bagja Pradana](https://github.com/risan). Source code, issues and releases live at [github.com/risan/sentiment-analysis](https://github.com/risan/sentiment-analysis).
 
