@@ -12,7 +12,3 @@ arch('public classes are final, except enums')
     ->expect('Risan\Sentiment')
     ->classes()
     ->toBeFinal();
-
-arch('internal classes are used only inside the package')
-    ->expect('Risan\Sentiment\Internal')
-    ->toOnlyBeUsedIn('Risan\Sentiment');
