@@ -254,7 +254,8 @@ function compileWordList(array $words, string $where, bool $asSet): array
 /**
  * The Indonesian lexicon is the authored word list, plus two things borrowed from the MIT
  * VADER lexicon because they are language-neutral:
- * - emoticons and symbols (keys without a run of two letters, with a non-alphanumeric character);
+ * - emoticons and symbols (keys without a run of two letters, with a non-alphanumeric character),
+ *   minus English initialisms such as `j/k` and `r&r`;
  * - the words that occur in single code point emoji descriptions, since the engine scores an
  *   emoji through its English description. A reviewed denylist drops Indonesian collisions.
  * An authored word always wins over a borrowed one.
@@ -299,6 +300,7 @@ function isEmoticon(string $key): bool
 {
     return preg_match('/\s/u', $key) !== 1
         && preg_match('/^\d+$/', $key) !== 1
+        && preg_match('/^\p{L}[\/&]\p{L}$/u', $key) !== 1
         && preg_match('/\p{L}{2}/u', $key) !== 1
         && preg_match('/[^\p{L}\p{N}]/u', $key) === 1;
 }
