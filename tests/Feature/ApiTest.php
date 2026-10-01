@@ -131,25 +131,25 @@ describe('empty input', function () {
 describe('customizing the lexicon', function () {
     it('returns new instances and leaves the original unchanged', function () {
         $original = new Analyzer();
-        $changed = $original->withWords(['mantul' => 2.5]);
+        $changed = $original->withWords(['cuan' => 2.5]);
         $removed = $original->withoutWords(['good']);
         $threshold = $original->withThreshold(0.5);
 
         expect($changed)->not->toBe($original);
         expect($removed)->not->toBe($original);
         expect($threshold)->not->toBe($original);
-        expect($original->analyze('mantul')->compound)->toBe(0.0);
+        expect($original->analyze('cuan')->compound)->toBe(0.0);
         expect($original->analyze('good')->compound)->toBe(0.4404);
         expect($original->analyze('good')->label)->toBe(Label::Positive);
-        expect($changed->analyze('mantul')->label)->toBe(Label::Positive);
+        expect($changed->analyze('cuan')->label)->toBe(Label::Positive);
         expect($removed->analyze('good')->compound)->toBe(0.0);
         expect($threshold->analyze('good')->label)->toBe(Label::Neutral);
     });
 
     it('adds and overrides valences, case-insensitively', function () {
-        $analyzer = (new Analyzer())->withWords(['MANTUL' => 2.5, 'good' => -2, 'Zonk' => -2.0]);
+        $analyzer = (new Analyzer())->withWords(['CUAN' => 2.5, 'good' => -2, 'Zonk' => -2.0]);
 
-        expect($analyzer->analyze('Mantul!')->isPositive())->toBeTrue();
+        expect($analyzer->analyze('Cuan!')->isPositive())->toBeTrue();
         expect($analyzer->analyze('good')->isNegative())->toBeTrue();
         expect($analyzer->analyze('zonk')->isNegative())->toBeTrue();
     });
@@ -187,6 +187,70 @@ describe('customizing the lexicon', function () {
     it('rejects empty keys and keys with whitespace, which could never match a token', function (string $key) {
         expect(fn() => (new Analyzer())->withWords([$key => 1.0]))->toThrow(InvalidArgumentException::class);
     })->with(['', 'two words', "tab\tkey", "line\nbreak", "\u{A0}"]);
+});
+
+describe('documentation examples', function () {
+    it('gives the label the documentation shows', function (string $text, string $language, array $added, array $removed, Label $expected) {
+        $analyzer = (new Analyzer($language))->withWords($added)->withoutWords($removed);
+
+        expect($analyzer->analyze($text)->label)->toBe($expected);
+    })->with([
+        'negated negative word' => ['Not bad at all!', 'en', [], [], Label::Positive],
+        'installation check' => ['Installation was great!', 'en', [], [], Label::Positive],
+        'package is awesome' => ['This package is awesome!', 'en', [], [], Label::Positive],
+        'smart, handsome and funny' => ['VADER is smart, handsome, and funny.', 'en', [], [], Label::Positive],
+        'negated positive word' => ['The food was not good.', 'en', [], [], Label::Negative],
+        'overridden slang' => ['That trick was sick!', 'en', ['sick' => 2.0], [], Label::Positive],
+        'stock slang' => ['That trick was sick!', 'en', [], [], Label::Negative],
+        'removed word' => ['We will kill it at the launch.', 'en', [], ['kill'], Label::Neutral],
+        'stock word' => ['We will kill it at the launch.', 'en', [], [], Label::Negative],
+        'Indonesian booster after the word' => ['Filmnya bagus banget!', 'id', [], [], Label::Positive],
+        'Indonesian praise' => ['Ini keren banget!', 'id', [], [], Label::Positive],
+        'Indonesian complaint' => ['Pelayanannya lambat dan mengecewakan.', 'id', [], [], Label::Negative],
+        'Indonesian stock negative' => ['Filmnya zonk banget', 'id', [], [], Label::Negative],
+        'Indonesian added positive word' => ['Investasinya cuan!', 'id', ['cuan' => 2.5], [], Label::Positive],
+        'Indonesian added negative word' => ['Filmnya bapuk banget', 'id', ['bapuk' => -2.0], [], Label::Negative],
+        'Indonesian unknown word' => ['Investasinya cuan!', 'id', [], [], Label::Neutral],
+    ]);
+
+    it('gives the scores shown in the result reference', function () {
+        $result = Sentiment::analyze('VADER is smart, handsome, and funny.');
+
+        expect($result->toArray())->toBe([
+            'label' => 'positive',
+            'compound' => 0.8316,
+            'positive' => 0.746,
+            'negative' => 0.0,
+            'neutral' => 0.254,
+        ]);
+        expect(json_encode($result))->toBe('{"label":"positive","compound":0.8316,"positive":0.746,"negative":0,"neutral":0.254}');
+    });
+
+    it('scores the emphasis ladder in increasing order', function () {
+        $compounds = array_map(
+            fn(string $text): float => Sentiment::analyze($text)->compound,
+            ['not good', 'good', 'very good', 'VERY good!!!'],
+        );
+        $sorted = $compounds;
+
+        sort($sorted);
+
+        expect($compounds)->toBe($sorted);
+        expect(count(array_unique($compounds)))->toBe(4);
+    });
+
+    it('lets an Indonesian booster after the word raise the compound', function () {
+        expect(Sentiment::analyze('Bagus banget!', Language::Indonesian)->compound)
+            ->toBeGreaterThan(Sentiment::analyze('Bagus!', Language::Indonesian)->compound);
+    });
+
+    it('lets an overridden word move the compound while the base analyzer keeps the stock value', function () {
+        $base = new Analyzer();
+        $gaming = $base->withWords(['sick' => 2.0]);
+
+        expect($gaming->analyze('sick')->label)->toBe(Label::Positive);
+        expect($base->analyze('sick')->compound)->toBeLessThan($gaming->analyze('sick')->compound);
+    });
 });
 
 describe('hostile input', function () {
