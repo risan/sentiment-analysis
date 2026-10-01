@@ -25,7 +25,7 @@ const features = [
     body:
       speed === null
         ? 'A single pass over the tokens. Lexicons are plain PHP arrays that OPcache keeps in shared memory.'
-        : `About ${formatNumber(speed)} short texts per second. Lexicons are plain PHP arrays that OPcache keeps in shared memory.`,
+        : `About ${formatNumber(Math.round(speed / 1000) * 1000)} short texts per second. Lexicons are plain PHP arrays that OPcache keeps in shared memory.`,
   },
   {
     icon: '🎛️',
