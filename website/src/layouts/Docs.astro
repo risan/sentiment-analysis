@@ -26,15 +26,15 @@ const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.
 const editUrl = `${repoUrl}/edit/main/website/${filePath}`;
 ---
 
-<Base title={`${title} · ${siteName}`} description={description} wide>
+<Base title={`${title} · ${siteName}`} description={description}>
   <div
-    class="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[13rem_minmax(0,1fr)_12rem]"
+    class="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[13rem_minmax(0,1fr)_12rem]"
   >
     <aside class="sticky top-11 hidden max-h-[calc(100vh-2.75rem)] self-start overflow-y-auto py-6 lg:block">
       <Sidebar current={slug} titles={titles} />
     </aside>
 
-    <main class="min-w-0 max-w-3xl py-6">
+    <main id="main-content" tabindex="-1" class="min-w-0 max-w-3xl py-6 outline-none">
       <details class="mb-5 border border-zinc-200 text-sm lg:hidden">
         <summary class="cursor-pointer px-3 py-1.5 font-medium">Menu</summary>
         <div class="border-t border-zinc-200 px-3 py-3">

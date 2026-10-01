@@ -54,11 +54,12 @@ html {
 
 .docs a {
   font-weight: 400;
-  text-decoration: none;
+  text-decoration-color: var(--color-blue-300);
+  text-underline-offset: 2px;
 }
 
 .docs a:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .docs code {

@@ -40,7 +40,7 @@ const jsonLd = {
 <Base title={title} description={description}>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+  <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 outline-none sm:px-6">
     <h1 class="text-[28px] leading-tight font-semibold">Sentiment analysis for PHP</h1>
     <p class="mt-2 max-w-2xl text-zinc-700">
       Scores English and Indonesian text as positive, negative or neutral. Pure PHP 8.3+, no API calls, no dependencies.
