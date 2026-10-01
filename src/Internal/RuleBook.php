@@ -31,7 +31,7 @@ final class RuleBook
         /** @var array<string, string> $emoji */
         $emoji = require "{$resources}/en/emoji.php";
 
-        /** @var array{negations: array<string, true>, boosters: array<string, float>, contrasts: array<string, true>, specialCases: array<string, float>, englishQuirks: bool} $rules */
+        /** @var array{negations: array<string, true>, boosters: array<string, float>, postBoosters: array<string, float>, contrasts: array<string, true>, phrases: array<string, true>, dualRole: array<string, true>, specialCases: array<string, float>, clitics: list<string>, reduplication: bool, englishQuirks: bool} $rules */
         $rules = require "{$resources}/{$language->value}/rules.php";
 
         return new Rules(
@@ -40,8 +40,13 @@ final class RuleBook
             emojiPattern: self::emojiPattern($emoji),
             negations: $rules['negations'],
             boosters: $rules['boosters'],
+            postBoosters: $rules['postBoosters'],
             contrasts: $rules['contrasts'],
+            phrases: $rules['phrases'],
+            dualRole: $rules['dualRole'],
             specialCases: $rules['specialCases'],
+            clitics: $rules['clitics'],
+            reduplication: $rules['reduplication'],
             englishQuirks: $rules['englishQuirks'],
         );
     }

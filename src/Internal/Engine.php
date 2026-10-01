@@ -53,61 +53,27 @@ final class Engine
         }
 
         $tokens = preg_split(self::TOKEN_SEPARATOR, $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        $count = count($tokens);
 
-        if ($count === 0) {
+        if ($tokens === []) {
             return ['compound' => 0.0, 'positive' => 0.0, 'negative' => 0.0, 'neutral' => 0.0];
         }
 
-        $rules = $this->rules;
-        $lower = [];
-        $isUpper = [];
-        $lexicon = [];
-        $booster = [];
-        $contrastIndex = null;
-        $upperCount = 0;
+        [$words, $lower] = $this->stripPunctuation($tokens, $ascii);
 
-        foreach ($tokens as $i => $token) {
-            $stripped = trim($token, self::PUNCTUATION);
-            $length = $ascii ? strlen($stripped) : mb_strlen($stripped, 'UTF-8');
-            $word = $length <= 2 ? $token : $stripped;
-            $lowered = $ascii ? strtolower($word) : mb_strtolower($word, 'UTF-8');
-            $upper = $ascii ? $lowered !== $word && strtoupper($word) === $word : self::isUpper($word);
-
-            $lower[$i] = $lowered;
-            $isUpper[$i] = $upper;
-            $lexicon[$i] = $rules->lexicon[$lowered] ?? null;
-            $booster[$i] = $rules->boosters[$lowered] ?? null;
-
-            if ($upper) {
-                $upperCount++;
-            }
-
-            if ($contrastIndex === null && isset($rules->contrasts[$lowered])) {
-                $contrastIndex = $i;
-            }
+        if ($this->rules->phrases !== []) {
+            [$words, $lower] = $this->mergePhrases($words, $lower);
         }
 
-        $isCapsDifferential = $upperCount > 0 && $upperCount < $count;
+        $sentence = $this->analyzeTokens($words, $lower, $ascii);
         $sentiments = [];
 
-        for ($i = 0; $i < $count; $i++) {
-            $sentiments[] = $this->isSkipped($lower, $booster, $i) || $lexicon[$i] === null
+        for ($i = 0, $count = count($lower); $i < $count; $i++) {
+            $sentiments[] = $this->isModifier($sentence, $i) || $sentence->lexicon[$i] === null
                 ? 0.0
-                : $this->wordValence($lower, $isUpper, $lexicon, $booster, $isCapsDifferential, $i);
+                : $this->wordValence($sentence, $i);
         }
 
-        if ($contrastIndex !== null) {
-            foreach ($sentiments as $position => $sentiment) {
-                if ($position < $contrastIndex) {
-                    $sentiments[$position] = $sentiment * 0.5;
-                } elseif ($position > $contrastIndex) {
-                    $sentiments[$position] = $sentiment * 1.5;
-                }
-            }
-        }
-
-        return $this->combine($sentiments, $text);
+        return $this->combine($this->weighContrast($sentiments, $lower), $text);
     }
 
     private static function scrub(string $text): string
@@ -125,11 +91,6 @@ final class Engine
         } finally {
             mb_substitute_character($previous);
         }
-    }
-
-    private static function isUpper(string $word): bool
-    {
-        return preg_match('/\p{Lu}/u', $word) === 1 && preg_match('/[\p{Ll}\p{Lt}]/u', $word) === 0;
     }
 
     /**
@@ -162,31 +123,205 @@ final class Engine
     }
 
     /**
-     * Boosters and "kind of" are modifiers, not sentiment words.
+     * Strips surrounding punctuation like the reference: a token that would shrink to
+     * two characters or fewer is probably an emoticon and stays whole.
      *
-     * @param array<int, string> $lower
-     * @param array<int, float|null> $booster
+     * @param list<string> $tokens
+     *
+     * @return array{array<int, string>, array<int, string>} the tokens and their lower-case forms
      */
-    private function isSkipped(array $lower, array $booster, int $i): bool
+    private function stripPunctuation(array $tokens, bool $ascii): array
     {
-        return $booster[$i] !== null
-            || ($this->rules->englishQuirks && $lower[$i] === 'kind' && ($lower[$i + 1] ?? null) === 'of');
+        $words = [];
+        $lower = [];
+
+        foreach ($tokens as $i => $token) {
+            $stripped = trim($token, self::PUNCTUATION);
+            $length = $ascii ? strlen($stripped) : mb_strlen($stripped, 'UTF-8');
+            $word = $length <= 2 ? $token : $stripped;
+
+            $words[$i] = $word;
+            $lower[$i] = $ascii ? strtolower($word) : mb_strtolower($word, 'UTF-8');
+        }
+
+        return [$words, $lower];
     }
 
     /**
+     * @param array<int, string> $words
      * @param array<int, string> $lower
-     * @param array<int, bool> $isUpper
+     *
+     * @return array{array<int, string>, array<int, string>}
+     */
+    private function mergePhrases(array $words, array $lower): array
+    {
+        $mergedWords = [];
+        $mergedLower = [];
+
+        for ($i = 0, $count = count($lower); $i < $count; $i++) {
+            if ($i + 1 < $count && isset($this->rules->phrases[$lower[$i] . ' ' . $lower[$i + 1]])) {
+                $mergedWords[] = $words[$i] . ' ' . $words[$i + 1];
+                $mergedLower[] = $lower[$i] . ' ' . $lower[$i + 1];
+                $i++;
+
+                continue;
+            }
+
+            $mergedWords[] = $words[$i];
+            $mergedLower[] = $lower[$i];
+        }
+
+        return [$mergedWords, $mergedLower];
+    }
+
+    /**
+     * @param array<int, string> $words
+     * @param array<int, string> $lower
+     */
+    private function analyzeTokens(array $words, array $lower, bool $ascii): Sentence
+    {
+        $rules = $this->rules;
+        $hasFallback = $rules->clitics !== [] || $rules->reduplication;
+        $isUpper = [];
+        $lexicon = [];
+        $booster = [];
+        $postBooster = [];
+        $upperCount = 0;
+
+        foreach ($words as $i => $word) {
+            $lowered = $lower[$i];
+            $upper = $ascii ? $lowered !== $word && strtoupper($word) === $word : self::isUpper($word);
+
+            $isUpper[$i] = $upper;
+            $lexicon[$i] = $rules->lexicon[$lowered] ?? ($hasFallback ? $this->fallbackValence($lowered) : null);
+            $booster[$i] = $rules->boosters[$lowered] ?? null;
+            $postBooster[$i] = $rules->postBoosters[$lowered] ?? null;
+
+            if ($upper) {
+                $upperCount++;
+            }
+        }
+
+        if ($rules->dualRole !== []) {
+            $this->resolveDualRoles($lower, $lexicon, $booster, $postBooster);
+        }
+
+        return new Sentence(
+            lower: $lower,
+            isUpper: $isUpper,
+            lexicon: $lexicon,
+            booster: $booster,
+            postBooster: $postBooster,
+            isCapsDifferential: $upperCount > 0 && $upperCount < count($words),
+        );
+    }
+
+    private static function isUpper(string $word): bool
+    {
+        return preg_match('/\p{Lu}/u', $word) === 1 && preg_match('/[\p{Ll}\p{Lt}]/u', $word) === 0;
+    }
+
+    /**
+     * Words that are not in the lexicon may still be a known word plus a clitic suffix
+     * ("bagusnya") or a reduplication ("bagus-bagus", "bagus2"). Modifiers never fall back:
+     * "sayangnya" ("unfortunately") is not "sayang" ("dear").
+     */
+    private function fallbackValence(string $word): ?float
+    {
+        $rules = $this->rules;
+
+        if (isset($rules->negations[$word]) || isset($rules->boosters[$word]) || isset($rules->postBoosters[$word]) || isset($rules->contrasts[$word])) {
+            return null;
+        }
+
+        foreach ($rules->clitics as $clitic) {
+            if (str_ends_with($word, $clitic)) {
+                $stem = rtrim(substr($word, 0, -strlen($clitic)), '-');
+
+                if (isset($rules->lexicon[$stem])) {
+                    return $rules->lexicon[$stem];
+                }
+            }
+        }
+
+        if (!$rules->reduplication) {
+            return null;
+        }
+
+        if (str_ends_with($word, '2')) {
+            return $rules->lexicon[substr($word, 0, -1)] ?? null;
+        }
+
+        $parts = explode('-', $word);
+
+        return count($parts) === 2 && $parts[0] === $parts[1] ? $rules->lexicon[$parts[0]] ?? null : null;
+    }
+
+    /**
+     * Decides, once per text, which role each dual-role word plays, so that a modifier
+     * always targets a token that keeps its valence and pre-modifiers win over post-modifiers:
+     *  1. right to left, a pre-modifier is a modifier if the next token is a sentiment word that
+     *     is not itself a modifier (post-modifiers still count as sentiment words here);
+     *  2. left to right, a post-modifier is a modifier if the previous token is a sentiment word
+     *     that is not itself a modifier.
+     * Any other dual-role word is a sentiment word.
+     *
+     * @param array<int, string> $lower
      * @param array<int, float|null> $lexicon
      * @param array<int, float|null> $booster
+     * @param array<int, float|null> $postBooster
      */
-    private function wordValence(array $lower, array $isUpper, array $lexicon, array $booster, bool $isCapsDifferential, int $i): float
+    private function resolveDualRoles(array $lower, array &$lexicon, array &$booster, array &$postBooster): void
     {
+        $dualRole = $this->rules->dualRole;
+        $count = count($lower);
+        $isModifier = array_fill(0, $count, false);
+
+        for ($i = $count - 2; $i >= 0; $i--) {
+            if (isset($dualRole[$lower[$i]]) && $booster[$i] !== null) {
+                $isModifier[$i] = $lexicon[$i + 1] !== null && !$isModifier[$i + 1];
+            }
+        }
+
+        for ($i = 1; $i < $count; $i++) {
+            if (isset($dualRole[$lower[$i]]) && $postBooster[$i] !== null) {
+                $isModifier[$i] = $lexicon[$i - 1] !== null && !$isModifier[$i - 1];
+            }
+        }
+
+        foreach ($lower as $i => $word) {
+            if (!isset($dualRole[$word])) {
+                continue;
+            }
+
+            if ($isModifier[$i]) {
+                $lexicon[$i] = null;
+            } else {
+                $booster[$i] = null;
+                $postBooster[$i] = null;
+            }
+        }
+    }
+
+    /**
+     * Modifiers and "kind of" are not sentiment words.
+     */
+    private function isModifier(Sentence $sentence, int $i): bool
+    {
+        return $sentence->booster[$i] !== null
+            || $sentence->postBooster[$i] !== null
+            || ($this->rules->englishQuirks && $sentence->lower[$i] === 'kind' && ($sentence->lower[$i + 1] ?? null) === 'of');
+    }
+
+    private function wordValence(Sentence $sentence, int $i): float
+    {
+        $lower = $sentence->lower;
         $quirks = $this->rules->englishQuirks;
-        $base = (float) $lexicon[$i];
+        $base = (float) $sentence->lexicon[$i];
         $valence = $base;
 
         if ($quirks) {
-            if ($lower[$i] === 'no' && ($lexicon[$i + 1] ?? null) !== null) {
+            if ($lower[$i] === 'no' && ($sentence->lexicon[$i + 1] ?? null) !== null) {
                 $valence = 0.0;
             }
 
@@ -199,18 +334,22 @@ final class Engine
             }
         }
 
-        if ($isUpper[$i] && $isCapsDifferential) {
+        if ($sentence->isUpper[$i] && $sentence->isCapsDifferential) {
             $valence += $valence > 0 ? self::CAPS_INCREMENT : -self::CAPS_INCREMENT;
+        }
+
+        if ($this->rules->postBoosters !== []) {
+            $valence = $this->applyPostBoosters($sentence, $i, $valence);
         }
 
         for ($start = 0; $start < 3; $start++) {
             $neighbour = $i - $start - 1;
 
-            if ($i <= $start || $lexicon[$neighbour] !== null) {
+            if ($i <= $start || $sentence->lexicon[$neighbour] !== null) {
                 continue;
             }
 
-            $scalar = $this->boosterScalar($booster[$neighbour], $isUpper[$neighbour], $isCapsDifferential, $valence);
+            $scalar = $this->boosterScalar($sentence, $sentence->booster[$neighbour], $neighbour, $valence);
 
             if ($start === 1) {
                 $scalar *= 0.95;
@@ -225,10 +364,29 @@ final class Engine
             }
         }
 
-        return $quirks ? $this->leastCheck($valence, $lower, $lexicon, $i) : $valence;
+        return $quirks ? $this->leastCheck($valence, $sentence, $i) : $valence;
     }
 
-    private function boosterScalar(?float $boost, bool $isUpper, bool $isCapsDifferential, float $valence): float
+    /**
+     * A booster one or two positions after the word scales it like one in front of it.
+     */
+    private function applyPostBoosters(Sentence $sentence, int $i, float $valence): float
+    {
+        for ($distance = 1; $distance <= 2; $distance++) {
+            $following = $i + $distance;
+
+            if (!isset($sentence->postBooster[$following]) || $sentence->lexicon[$following] !== null) {
+                continue;
+            }
+
+            $scalar = $this->boosterScalar($sentence, $sentence->postBooster[$following], $following, $valence);
+            $valence += $distance === 2 ? $scalar * 0.95 : $scalar;
+        }
+
+        return $valence;
+    }
+
+    private function boosterScalar(Sentence $sentence, ?float $boost, int $position, float $valence): float
     {
         if ($boost === null) {
             return 0.0;
@@ -236,7 +394,7 @@ final class Engine
 
         $scalar = $valence < 0 ? -$boost : $boost;
 
-        if ($isUpper && $isCapsDifferential) {
+        if ($sentence->isUpper[$position] && $sentence->isCapsDifferential) {
             $scalar += $valence > 0 ? self::CAPS_INCREMENT : -self::CAPS_INCREMENT;
         }
 
@@ -330,21 +488,50 @@ final class Engine
 
     /**
      * "least" negates unless it is part of "at least" or "very least".
-     *
-     * @param array<int, string> $lower
-     * @param array<int, float|null> $lexicon
      */
-    private function leastCheck(float $valence, array $lower, array $lexicon, int $i): float
+    private function leastCheck(float $valence, Sentence $sentence, int $i): float
     {
-        if ($i > 1 && $lexicon[$i - 1] === null && $lower[$i - 1] === 'least') {
+        $lower = $sentence->lower;
+
+        if ($i > 1 && $sentence->lexicon[$i - 1] === null && $lower[$i - 1] === 'least') {
             return $lower[$i - 2] !== 'at' && $lower[$i - 2] !== 'very' ? $valence * self::NEGATION_SCALAR : $valence;
         }
 
-        if ($i > 0 && $lexicon[$i - 1] === null && $lower[$i - 1] === 'least') {
+        if ($i > 0 && $sentence->lexicon[$i - 1] === null && $lower[$i - 1] === 'least') {
             return $valence * self::NEGATION_SCALAR;
         }
 
         return $valence;
+    }
+
+    /**
+     * Weighs the sentiments before the first contrast word half and the ones after it one and
+     * a half, scaling by position (the reference scales by value and mis-scales duplicates).
+     *
+     * @param list<float> $sentiments
+     * @param array<int, string> $lower
+     *
+     * @return list<float>
+     */
+    private function weighContrast(array $sentiments, array $lower): array
+    {
+        foreach ($lower as $contrastIndex => $word) {
+            if (!isset($this->rules->contrasts[$word])) {
+                continue;
+            }
+
+            foreach ($sentiments as $position => $sentiment) {
+                if ($position < $contrastIndex) {
+                    $sentiments[$position] = $sentiment * 0.5;
+                } elseif ($position > $contrastIndex) {
+                    $sentiments[$position] = $sentiment * 1.5;
+                }
+            }
+
+            break;
+        }
+
+        return $sentiments;
     }
 
     /**

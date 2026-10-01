@@ -1,0 +1,9 @@
+# English words from emoji descriptions that must NOT be scored in Indonesian text, because they
+# are common Indonesian words with another meaning. One lower-case word per line.
+# The build adds the VADER valence of every other word that occurs in a single code point
+# emoji description (tools/data/en/emoji_utf8_lexicon.txt) to the Indonesian lexicon.
+#
+# no: "nomor" is abbreviated "no." ("no. 7"), so VADER's "no" (-1.2) would score every house number.
+# cut: "Cut" is an Acehnese title and first name ("Cut Nyak Dien"), not a verb.
+no
+cut
