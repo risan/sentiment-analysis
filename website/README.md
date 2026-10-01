@@ -11,6 +11,7 @@ npm ci
 npm run dev       # http://localhost:4321
 npm run build     # static site in dist/
 npm run preview   # serve dist/ with wrangler, like production (http://localhost:8787)
+npm run check:local  # build, serve with a local Workers runtime, GET-check key pages and the 404
 ```
 
 ## Content
