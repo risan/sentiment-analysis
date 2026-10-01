@@ -84,10 +84,10 @@ use Risan\Sentiment\Analyzer;
 use Risan\Sentiment\Language;
 
 $analyzer = (new Analyzer(Language::Indonesian))
-    ->withWords(['mantul' => 2.5, 'zonk' => -2.0])
+    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0])
     ->withThreshold(0.1);
 
-$result = $analyzer->analyze('Konsernya mantul!');
+$result = $analyzer->analyze('Investasinya cuan!');
 ```
 
 ## Example scores

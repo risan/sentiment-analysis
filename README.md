@@ -74,11 +74,11 @@ use Risan\Sentiment\Analyzer;
 use Risan\Sentiment\Language;
 
 $analyzer = (new Analyzer(Language::Indonesian))
-    ->withWords(['mantul' => 2.5, 'zonk' => -2.0]) // add or override valences (-4..4)
+    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0]) // add or override valences (-4..4)
     ->withoutWords(['kasar'])                      // drop words from the lexicon
     ->withThreshold(0.1);                          // neutral band is (-0.1, 0.1)
 
-$analyzer->analyze('Filmnya zonk banget')->label; // Label::Negative
+$analyzer->analyze('Filmnya bapuk banget')->label; // Label::Negative
 ```
 
 The default threshold is 0.05, VADER's published value. A text is `Positive` when

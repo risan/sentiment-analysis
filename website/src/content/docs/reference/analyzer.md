@@ -14,11 +14,11 @@ $analyzer = new Analyzer();                      // English
 $analyzer = new Analyzer(Language::Indonesian);  // or new Analyzer('id')
 
 $analyzer = $analyzer
-    ->withWords(['mantul' => 2.5, 'zonk' => -2.0])
+    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0])
     ->withoutWords(['kill'])
     ->withThreshold(0.1);
 
-$result = $analyzer->analyze('Konsernya mantul!');
+$result = $analyzer->analyze('Investasinya cuan!');
 ```
 
 ## Constructor
@@ -95,7 +95,7 @@ Keys are lower-cased. A numeric key such as `'1337'` works, even though PHP turn
 
 ```php
 $analyzer = (new Analyzer(Language::Indonesian))
-    ->withWords(['mantul' => 2.5, 'zonk' => -2.0]);
+    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0]);
 
 $analyzer->withWords(['great' => 9]); // throws InvalidArgumentException
 ```
