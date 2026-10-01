@@ -80,7 +80,7 @@ Accuracy was measured on the test split of **IndoNLU SmSA**, a public Indonesian
 | Accuracy | <Metric value={metrics.indonesian.accuracy} as="percent" /> |
 | Macro F1 | <Metric value={metrics.indonesian.macroF1} as="percent" /> |
 | Majority-class baseline accuracy | <Metric value={metrics.indonesian.majorityBaselineAccuracy} as="percent" /> |
-| Lexicon entries | <Metric value={metrics.indonesian.lexiconEntries} /> |
+| Words written for the lexicon | <Metric value={metrics.indonesian.lexiconEntries} /> |
 
 {metrics.indonesian.accuracy === null && <p><em>The evaluation has not been published yet.</em></p>}
 
@@ -89,7 +89,7 @@ A lexicon method does not match a fine-tuned neural model, and these numbers are
 ### Known limits
 
 - **Sarcasm and irony** are read at face value.
-- **Regional languages** (Javanese, Sundanese and others) and heavy code-mixing are only partly covered.
+- **Regional languages** (Javanese, Sundanese and others) and heavy code-mixing are only partly covered. The Indonesian lexicon includes the English words that are common in Indonesian reviews (`good`, `best`, `worst`), but it does not fall back to the whole English lexicon: on the SmSA validation split that fallback did not improve the macro F1, because many English words are also ordinary Indonesian words (`sore`, `alas`, `no`).
 - **Domain vocabulary** such as product names, medical or legal terms is missing unless you [add it](/guides/customizing-the-lexicon/).
 - **Words are not stemmed.** Affixed forms must be in the lexicon to be recognized, so rare inflections can be missed.
 - **Ambiguous words** are scored conservatively or left out. For example, `parah` ("severe") is negative on its own, but acts as an intensifier after another sentiment word, as in `keren parah`.

@@ -10,6 +10,8 @@ A complete rewrite. The API is not compatible with 1.x.
   ALL CAPS, punctuation, emoticon and emoji handling.
 - `Sentiment::analyze()` for one-liners and an immutable `Analyzer` with `withWords()`,
   `withoutWords()` and `withThreshold()`.
+- An Indonesian lexicon of about 2,800 words written for this package, and
+  `tools/evaluate-id.php`, which measures it on IndoNLU SmSA.
 - Typed results: `Result`, `Label` and `Language`.
 - A documentation site at <https://sentiment-analysis.risanb.com>.
 

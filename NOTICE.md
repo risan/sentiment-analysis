@@ -49,3 +49,7 @@ Indonesian sentiment lexicon (InSet, SentiStrength-ID, Kamus Alay or any other) 
 copied or adapted, because none of them carries a license that allows redistribution.
 The Indonesian lexicon only borrows language-neutral entries from VADER (emoticons and the
 English words of emoji descriptions), as described above.
+
+Its accuracy is evaluated on the IndoNLU SmSA dataset (Apache-2.0, Wilie et al., 2020) by
+`tools/evaluate-id.php`, which downloads the data into a temporary directory. No part of the
+dataset is included in this package.

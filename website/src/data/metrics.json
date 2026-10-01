@@ -1,15 +1,15 @@
 {
   "benchmark": {
-    "phpVersion": null,
-    "shortTextsPerSecond": null,
-    "reviewsPerSecond": null,
-    "longTextsPerSecond": null,
-    "peakMemoryMb": null
+    "phpVersion": "8.5.11",
+    "shortTextsPerSecond": 66164,
+    "reviewsPerSecond": 11993,
+    "longTextsPerSecond": 649,
+    "peakMemoryMb": 0.98
   },
   "indonesian": {
-    "lexiconEntries": null,
-    "accuracy": null,
-    "macroF1": null,
-    "majorityBaselineAccuracy": null
+    "lexiconEntries": 2776,
+    "accuracy": 0.812,
+    "macroF1": 0.7437,
+    "majorityBaselineAccuracy": 0.416
   }
 }

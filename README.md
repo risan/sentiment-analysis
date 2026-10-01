@@ -110,8 +110,11 @@ the bad bytes are dropped.
 
 The Indonesian lexicon was written for this package. It does not use any existing Indonesian
 sentiment lexicon. It is a lexicon method: it does not understand sarcasm, regional languages or
-domain-specific words, and accuracy is below what a fine-tuned model reaches. Measured accuracy
-is published in the documentation.
+domain-specific words, and accuracy is below what a fine-tuned model reaches. On the test split
+of [IndoNLU SmSA](https://github.com/IndoNLP/indonlu) (500 reviews and comments, three classes,
+default threshold) it reaches 81.2% accuracy and 0.744 macro F1; always guessing the most common
+class gives 41.6% accuracy. Reproduce it with `php tools/evaluate-id.php --split=test`. More
+detail is in the documentation.
 
 ## Performance
 
