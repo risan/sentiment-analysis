@@ -1,0 +1,47 @@
+[
+  {
+    "text": "VADER is smart, handsome, and funny.",
+    "language": "en",
+    "label": "positive",
+    "compound": 0.8316,
+    "positive": 0.746,
+    "negative": 0,
+    "neutral": 0.254
+  },
+  {
+    "text": "VADER is not smart, handsome, nor funny.",
+    "language": "en",
+    "label": "negative",
+    "compound": -0.7424,
+    "positive": 0,
+    "negative": 0.646,
+    "neutral": 0.354
+  },
+  {
+    "text": "The meeting is at 3 pm tomorrow.",
+    "language": "en",
+    "label": "neutral",
+    "compound": 0,
+    "positive": 0,
+    "negative": 0,
+    "neutral": 1
+  },
+  {
+    "text": "Filmnya bagus banget!",
+    "language": "id",
+    "label": "positive",
+    "compound": 0.673,
+    "positive": 0.693,
+    "negative": 0,
+    "neutral": 0.307
+  },
+  {
+    "text": "Pelayanannya lambat dan mengecewakan.",
+    "language": "id",
+    "label": "negative",
+    "compound": -0.7184,
+    "positive": 0,
+    "negative": 0.75,
+    "neutral": 0.25
+  }
+]

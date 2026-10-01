@@ -1,0 +1,15 @@
+{
+  "benchmark": {
+    "phpVersion": null,
+    "shortTextsPerSecond": null,
+    "reviewsPerSecond": null,
+    "longTextsPerSecond": null,
+    "peakMemoryMb": null
+  },
+  "indonesian": {
+    "lexiconEntries": null,
+    "accuracy": null,
+    "macroF1": null,
+    "majorityBaselineAccuracy": null
+  }
+}

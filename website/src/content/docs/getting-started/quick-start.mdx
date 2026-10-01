@@ -1,0 +1,103 @@
+---
+title: Quick start
+description: Analyze your first text with Sentiment::analyze(), read the label and scores, and switch to Indonesian or a custom analyzer.
+---
+
+import ResultsTable from '../../../components/ResultsTable.astro';
+
+## Analyze a text
+
+`Sentiment::analyze()` is the one-liner. It uses a shared default analyzer, built once per language.
+
+```php
+use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('VADER is smart, handsome, and funny.');
+
+$result->label;      // Label::Positive
+$result->compound;   // 0.8316
+$result->positive;   // 0.746
+$result->neutral;    // 0.254
+$result->negative;   // 0.0
+```
+
+The `compound` score is the headline number: -1 is as negative as it gets, +1 as positive as it gets. `positive`, `neutral` and `negative` are ratios that add up to about 1. [Understanding the scores](/guides/understanding-scores/) explains each one.
+
+## Check the label
+
+```php
+if ($result->isPositive()) {
+    // ...
+}
+
+$result->isNegative();
+$result->isNeutral();
+```
+
+`$result->label` is a [`Label`](/reference/label/) enum, so you can also `match` on it:
+
+```php
+use Risan\Sentiment\Label;
+
+$message = match ($result->label) {
+    Label::Positive => 'Glad you liked it!',
+    Label::Negative => 'Sorry to hear that.',
+    Label::Neutral => 'Thanks for the feedback.',
+};
+```
+
+## Use it as an array or JSON
+
+```php
+$result->toArray();
+// [
+//     'label' => 'positive',
+//     'compound' => 0.8316,
+//     'positive' => 0.746,
+//     'negative' => 0.0,
+//     'neutral' => 0.254,
+// ]
+
+json_encode($result); // the same shape, as a JSON object
+```
+
+## Analyze Indonesian
+
+Pass a [`Language`](/reference/language/) case, or its string code:
+
+```php
+use Risan\Sentiment\Language;
+use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('Filmnya bagus banget!', Language::Indonesian);
+$result = Sentiment::analyze('Filmnya bagus banget!', 'id');
+
+$result->label; // Label::Positive
+```
+
+## Customize an analyzer
+
+When you need your own words or a different threshold, build an [`Analyzer`](/reference/analyzer/). Every `with*()` method returns a new instance and leaves the original untouched.
+
+```php
+use Risan\Sentiment\Analyzer;
+use Risan\Sentiment\Language;
+
+$analyzer = (new Analyzer(Language::Indonesian))
+    ->withWords(['mantul' => 2.5, 'zonk' => -2.0])
+    ->withThreshold(0.1);
+
+$result = $analyzer->analyze('Konsernya mantul!');
+```
+
+## Example scores
+
+These sentences were scored by the library itself:
+
+<ResultsTable />
+
+## Where to go next
+
+- [Understanding the scores](/guides/understanding-scores/)
+- [Customizing the lexicon](/guides/customizing-the-lexicon/)
+- [API reference](/reference/sentiment/)

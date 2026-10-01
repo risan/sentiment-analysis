@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sentiment-analysis.risanb.com/sitemap-index.xml

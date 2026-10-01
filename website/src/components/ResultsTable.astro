@@ -1,0 +1,194 @@
+---
+import { examplesFor } from '../lib/data';
+
+interface Props {
+  language?: 'en' | 'id';
+}
+
+const { language } = Astro.props;
+const rows = examplesFor(language);
+const languageNames = { en: 'English', id: 'Indonesian' };
+
+function barStyle(compound: number): string {
+  const width = Math.abs(compound) * 50;
+  const left = compound < 0 ? 50 - width : 50;
+
+  return `left:${left}%;width:${width}%`;
+}
+---
+
+<div class="results-wrap">
+  <table class="results">
+    <thead>
+      <tr>
+        <th scope="col">Text</th>
+        <th scope="col">Label</th>
+        <th scope="col">Compound</th>
+        <th scope="col" class="num">Pos</th>
+        <th scope="col" class="num">Neu</th>
+        <th scope="col" class="num">Neg</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            <td class="text">
+              <span class="sentence" lang={row.language}>
+                {row.text}
+              </span>
+              <span class="lang">{languageNames[row.language]}</span>
+            </td>
+            <td>
+              <span class={`chip chip-${row.label}`}>{row.label}</span>
+            </td>
+            <td class="compound">
+              <span class="meter" aria-hidden="true">
+                <span class={`fill fill-${row.label}`} style={barStyle(row.compound)} />
+              </span>
+              <span class="value">{row.compound.toFixed(4)}</span>
+            </td>
+            <td class="num">{row.positive.toFixed(3)}</td>
+            <td class="num">{row.neutral.toFixed(3)}</td>
+            <td class="num">{row.negative.toFixed(3)}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .results-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 1rem;
+    background: var(--sl-color-bg-nav);
+  }
+
+  .results {
+    display: table;
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: var(--sl-text-sm);
+  }
+
+  .results :global(th),
+  .results :global(td) {
+    padding: 0.85rem 1rem;
+    border: 0;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .results thead th {
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+    background: none;
+    border-bottom: 1px solid var(--sl-color-hairline-light);
+  }
+
+  .results tbody tr + tr td {
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .results tbody tr:nth-child(even) {
+    background: transparent;
+  }
+
+  .text {
+    min-width: 16rem;
+  }
+
+  .sentence {
+    display: block;
+    color: var(--sl-color-white);
+    font-weight: 500;
+  }
+
+  .lang {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+
+  .num,
+  .value {
+    font-family: 'JetBrains Mono Variable', var(--__sl-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .num {
+    text-align: right !important;
+    color: var(--sl-color-gray-2);
+  }
+
+  .compound {
+    min-width: 12rem;
+  }
+
+  .meter {
+    position: relative;
+    display: inline-block;
+    width: 5.5rem;
+    height: 0.5rem;
+    margin-right: 0.6rem;
+    vertical-align: middle;
+    border-radius: 999px;
+    background: var(--sl-color-gray-5);
+  }
+
+  .meter::after {
+    content: '';
+    position: absolute;
+    inset-block: -2px;
+    left: 50%;
+    width: 1px;
+    background: var(--sl-color-gray-3);
+  }
+
+  .fill {
+    position: absolute;
+    inset-block: 0;
+    border-radius: 999px;
+  }
+
+  .fill-positive {
+    background: var(--score-positive);
+  }
+
+  .fill-negative {
+    background: var(--score-negative);
+  }
+
+  .fill-neutral {
+    background: var(--score-neutral);
+  }
+
+  .chip {
+    display: inline-block;
+    padding: 0.15rem 0.65rem;
+    border-radius: 999px;
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .chip-positive {
+    color: var(--score-positive-ink);
+    background: var(--score-positive-bg);
+  }
+
+  .chip-negative {
+    color: var(--score-negative-ink);
+    background: var(--score-negative-bg);
+  }
+
+  .chip-neutral {
+    color: var(--score-neutral-ink);
+    background: var(--score-neutral-bg);
+  }
+</style>

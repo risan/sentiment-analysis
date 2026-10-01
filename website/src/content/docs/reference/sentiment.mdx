@@ -1,0 +1,63 @@
+---
+title: Sentiment
+description: API reference for Risan\Sentiment\Sentiment, the static one-liner for analyzing text with a shared default analyzer per language.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+```php
+use Risan\Sentiment\Sentiment;
+```
+
+`final class Sentiment` is the shortest way to score a text. It keeps one default [`Analyzer`](/reference/analyzer/) per language, built lazily the first time you ask for it and reused afterwards.
+
+The class has a private constructor and cannot be instantiated. For custom words or thresholds, use [`Analyzer`](/reference/analyzer/) directly.
+
+<Aside>
+Only `Sentiment`, `Analyzer`, `Result`, `Label` and `Language` are public API. Everything under `Risan\Sentiment\Internal` is marked `@internal` and may change in any release.
+</Aside>
+
+## Methods
+
+### analyze()
+
+```php
+public static function analyze(
+    string $text,
+    Language|string $language = Language::English,
+): Result
+```
+
+Scores a text with the default analyzer of the given language.
+
+**Parameters**
+
+| Name | Type | Description |
+|---|---|---|
+| `$text` | `string` | The text to analyze. Any length, including empty. |
+| `$language` | `Language\|string` | A [`Language`](/reference/language/) case, or its code: `'en'` or `'id'`. Defaults to English. |
+
+**Returns** a [`Result`](/reference/result/).
+
+**Throws**
+
+| Exception | When |
+|---|---|
+| `ValueError` | `$language` is a string that is not a known code. |
+
+Invalid UTF-8 input never throws: invalid bytes are dropped and the rest of the text is scored. Empty or whitespace-only text returns all zeros and a neutral label.
+
+**Example**
+
+```php
+use Risan\Sentiment\Language;
+use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('This package is awesome!');
+$result->label; // Label::Positive
+
+$result = Sentiment::analyze('Filmnya bagus banget!', Language::Indonesian);
+$result = Sentiment::analyze('Filmnya bagus banget!', 'id'); // same thing
+
+Sentiment::analyze('Hello', 'xx'); // throws ValueError
+```

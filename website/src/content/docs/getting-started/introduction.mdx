@@ -1,0 +1,46 @@
+---
+title: Introduction
+description: What Sentiment Analysis for PHP does, how it scores text, and when it is the right tool.
+---
+
+**Sentiment Analysis for PHP** tells you whether a piece of text sounds positive, negative or neutral. You give it a string, it gives you back a label and a set of scores.
+
+```php
+use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('This package is awesome!');
+
+$result->label;    // Label::Positive
+$result->compound; // a float between -1 and 1
+```
+
+## How it works
+
+The package is a PHP implementation of **VADER** (Valence Aware Dictionary and sEntiment Reasoner), a well-known rule-based model by C.J. Hutto and Eric Gilbert. It needs no training data and no network access:
+
+1. A **lexicon** gives every known word a valence from -4 (very negative) to +4 (very positive).
+2. A small set of **rules** adjusts those valences in context: negation (`not good`), intensifiers (`very good`), dampeners (`kind of good`), contrast (`good, but…`), ALL CAPS, repeated `!` and `?`, emoticons and emoji.
+3. The adjusted valences are summed and squashed into a **compound** score between -1 and +1.
+
+English uses the original VADER lexicon and rules, and its scores are checked against the reference implementation on a large test corpus. Indonesian uses the same engine with a lexicon and rules written for this project.
+
+## What it is good at
+
+- Short, informal text: reviews, comments, tweets, chat messages, support tickets.
+- Running anywhere PHP runs: no extension to install, no service to call, nothing to host.
+- Being explainable. Every score comes from words and rules you can read, and you can [change the lexicon](/guides/customizing-the-lexicon/).
+
+## What it is not
+
+A rule-based model reads the surface of the text. It does not understand sarcasm, domain jargon or long arguments that turn on context. If you need the last few points of accuracy on a specific domain, a fine-tuned model will beat it. If you need a fast, free, predictable first signal, this is a good fit. See [Languages](/guides/languages/) for the limits in each language.
+
+## Requirements
+
+- PHP 8.3 or newer
+- The `mbstring` extension (enabled in nearly every PHP build)
+
+## Next steps
+
+- [Install the package](/getting-started/installation/)
+- [Score your first text](/getting-started/quick-start/)
+- [Understand the scores](/guides/understanding-scores/)
