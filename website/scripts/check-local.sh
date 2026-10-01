@@ -8,19 +8,39 @@ base="http://localhost:${port}"
 body="$(mktemp)"
 log="$(mktemp)"
 
+if curl -s -o /dev/null "$base/"; then
+  echo "FAIL something already answers on port ${port}; stop it first so the checks hit this build"
+  exit 1
+fi
+
 npm run build
 
 WRANGLER_SEND_METRICS=false node_modules/.bin/wrangler dev --port "$port" >"$log" 2>&1 &
 wrangler_pid=$!
 trap 'kill "$wrangler_pid" 2>/dev/null || true; rm -f "$body" "$log"' EXIT
 
+ready=false
+
 for _ in $(seq 1 60); do
+  if ! kill -0 "$wrangler_pid" 2>/dev/null; then
+    echo "FAIL wrangler dev exited before it was ready; its log:"
+    cat "$log"
+    exit 1
+  fi
+
   if curl -s -o /dev/null "$base/"; then
+    ready=true
     break
   fi
 
   sleep 1
 done
+
+if [ "$ready" = false ]; then
+  echo "FAIL wrangler dev did not answer on port ${port} within 60 seconds; its log:"
+  cat "$log"
+  exit 1
+fi
 
 failures=0
 
