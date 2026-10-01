@@ -5,36 +5,40 @@ description: Analyze your first text with Sentiment::analyze(), read the label a
 
 import ResultsTable from '../../../components/ResultsTable.astro';
 
-## Analyze a text
+This page shows the basics in five short steps. Each step builds on the one before.
 
-`Sentiment::analyze()` is the one-liner. It uses a shared default analyzer, built once per language.
+## Analyze a text
 
 ```php
 use Risan\Sentiment\Sentiment;
 
-$result = Sentiment::analyze('VADER is smart, handsome, and funny.');
+$result = Sentiment::analyze('This package is awesome!');
 
-$result->label;      // Label::Positive
-$result->compound;   // 0.8316
-$result->positive;   // 0.746
-$result->neutral;    // 0.254
-$result->negative;   // 0.0
+$result->label;    // Label::Positive
+$result->compound; // 0.6588
 ```
 
-The `compound` score is the headline number: -1 is as negative as it gets, +1 as positive as it gets. `positive`, `neutral` and `negative` are ratios that add up to about 1. [Understanding the scores](/guides/understanding-scores/) explains each one.
+`Sentiment::analyze()` is the shortest way to score a text. It returns a [`Result`](/reference/result/).
 
-## Check the label
+`compound` is the main score. It runs from -1 (very negative) to +1 (very positive). The `label` comes from `compound`.
+
+## Read the result
+
+Keep using the same `$result`:
 
 ```php
-if ($result->isPositive()) {
-    // ...
-}
+$result->positive; // 0.594
+$result->neutral;  // 0.406
+$result->negative; // 0.0
 
-$result->isNegative();
-$result->isNeutral();
+$result->isPositive(); // true
+$result->isNegative(); // false
+$result->isNeutral();  // false
 ```
 
-`$result->label` is a [`Label`](/reference/label/) enum, so you can also `match` on it:
+`positive`, `neutral` and `negative` are shares of the weighted sentiment signal. They add up to about 1. [Understanding the scores](/guides/understanding-scores/) explains each one.
+
+The label is a [`Label`](/reference/label/) enum, so you can also use `match`:
 
 ```php
 use Risan\Sentiment\Label;
@@ -46,53 +50,74 @@ $message = match ($result->label) {
 };
 ```
 
-## Use it as an array or JSON
+## Export the result
 
 ```php
 $result->toArray();
 // [
 //     'label' => 'positive',
-//     'compound' => 0.8316,
-//     'positive' => 0.746,
+//     'compound' => 0.6588,
+//     'positive' => 0.594,
 //     'negative' => 0.0,
-//     'neutral' => 0.254,
+//     'neutral' => 0.406,
 // ]
 
-json_encode($result); // the same shape, as a JSON object
+json_encode($result);
+// {"label":"positive","compound":0.6588,"positive":0.594,
+//  "negative":0,"neutral":0.406}
 ```
 
-## Analyze Indonesian
+A `Result` is `JsonSerializable`, so you can encode it directly. PHP writes the float `0.0` as `0` in JSON.
 
-Pass a [`Language`](/reference/language/) case, or its string code:
+## Analyze Indonesian
 
 ```php
 use Risan\Sentiment\Language;
 use Risan\Sentiment\Sentiment;
 
-$result = Sentiment::analyze('Filmnya bagus banget!', Language::Indonesian);
-$result = Sentiment::analyze('Filmnya bagus banget!', 'id');
+$result = Sentiment::analyze(
+    'Filmnya bagus banget!',
+    Language::Indonesian,
+);
 
-$result->label; // Label::Positive
+$result->label;    // Label::Positive
+$result->compound; // 0.623
+```
+
+You can also pass the language code:
+
+```php
+Sentiment::analyze('Filmnya bagus banget!', 'id');
+```
+
+An unknown code throws a `ValueError`:
+
+```php
+Sentiment::analyze('Hello', 'fr'); // throws ValueError
 ```
 
 ## Customize an analyzer
 
-When you need your own words or a different threshold, build an [`Analyzer`](/reference/analyzer/). Every `with*()` method returns a new instance and leaves the original untouched.
+To add words or change the threshold, build an [`Analyzer`](/reference/analyzer/). Every `with*()` method returns a new analyzer. The original stays the same.
 
 ```php
 use Risan\Sentiment\Analyzer;
 use Risan\Sentiment\Language;
 
 $analyzer = (new Analyzer(Language::Indonesian))
-    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0])
+    ->withWords(['cuan' => 2.5])
+    ->withoutWords(['kasar'])
     ->withThreshold(0.1);
 
 $result = $analyzer->analyze('Investasinya cuan!');
+
+$result->label;    // Label::Positive
+$result->compound; // 0.5848
 ```
 
 ## Example scores
 
-These sentences were scored by the library itself:
+The library scored these sentences. The bar next to each compound score shows its size. It grows to the right for positive scores and to the left for negative ones.
 
 <ResultsTable />
 

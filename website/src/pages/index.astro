@@ -10,10 +10,81 @@ const description =
   'Fast, dependency-free sentiment analysis for PHP 8.3+. VADER-based scoring for English and Indonesian that understands negation, intensifiers, emoji and emoticons. MIT licensed.';
 const installCommand = 'composer require risan/sentiment-analysis';
 
-const example = `use Risan\\Sentiment\\Sentiment;
+const usage = [
+  {
+    title: 'Analyze a text',
+    text: 'Pass a string. You get a result with a label and a compound score.',
+    link: { href: '/getting-started/quick-start/', label: 'Quick start' },
+    code: `use Risan\\Sentiment\\Sentiment;
 
-Sentiment::analyze('Not bad at all!')->label;             // Label::Positive
-Sentiment::analyze('Filmnya bagus banget!', 'id')->label; // Label::Positive`;
+$result = Sentiment::analyze(
+    'This package is awesome!',
+);
+
+$result->label;    // Label::Positive
+$result->compound; // 0.6588`,
+  },
+  {
+    title: 'Read the result',
+    text: 'The three ratios add up to about 1. Three methods check the label.',
+    link: { href: '/guides/understanding-scores/', label: 'Understanding the scores' },
+    code: `$result->positive; // 0.594
+$result->neutral;  // 0.406
+$result->negative; // 0.0
+
+$result->isPositive(); // true
+$result->isNegative(); // false
+$result->isNeutral();  // false`,
+  },
+  {
+    title: 'Export the result',
+    text: 'Turn the result into an array, or encode it as JSON.',
+    link: { href: '/reference/result/', label: 'Result reference' },
+    code: `$result->toArray();
+// ['label' => 'positive', 'compound' => 0.6588,
+//  'positive' => 0.594, 'negative' => 0.0,
+//  'neutral' => 0.406]
+
+json_encode($result);
+// {"label":"positive","compound":0.6588,
+//  "positive":0.594,"negative":0,
+//  "neutral":0.406}`,
+  },
+  {
+    title: 'Analyze Indonesian',
+    text: 'Pass the language as an enum case, or as the code \'id\'.',
+    link: { href: '/guides/languages/', label: 'Languages' },
+    code: `use Risan\\Sentiment\\Language;
+use Risan\\Sentiment\\Sentiment;
+
+$result = Sentiment::analyze(
+    'Filmnya bagus banget!',
+    Language::Indonesian,
+);
+
+$result->label;    // Label::Positive
+$result->compound; // 0.623
+
+Sentiment::analyze('Filmnya bagus banget!', 'id');`,
+  },
+  {
+    title: 'Customize the analyzer',
+    text: 'Add or remove words and change the threshold. Every call returns a new analyzer.',
+    link: { href: '/guides/customizing-the-lexicon/', label: 'Customizing the lexicon' },
+    code: `use Risan\\Sentiment\\Analyzer;
+use Risan\\Sentiment\\Language;
+
+$analyzer = (new Analyzer(Language::Indonesian))
+    ->withWords(['cuan' => 2.5])
+    ->withoutWords(['kasar'])
+    ->withThreshold(0.1);
+
+$result = $analyzer->analyze('Investasinya cuan!');
+
+$result->label;    // Label::Positive
+$result->compound; // 0.5848`,
+  },
+];
 
 const phpVersion = metrics.benchmark.phpVersion.split('.').slice(0, 2).join('.');
 const shortTexts = metrics.benchmark.shortTextsPerSecond.toLocaleString('en-US');
@@ -42,41 +113,65 @@ const jsonLd = {
 
   <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 outline-none sm:px-6">
     <h1 class="text-[28px] leading-tight font-semibold">Sentiment analysis for PHP</h1>
-    <p class="mt-2 max-w-2xl text-zinc-700">
+    <p class="mt-2 max-w-2xl text-stone-700">
       Scores English and Indonesian text as positive, negative or neutral. Pure PHP 8.3+, no API calls, no dependencies.
     </p>
-
-    <div class="mt-4 flex max-w-md items-center justify-between gap-3 border border-zinc-200 bg-zinc-50 py-1 pr-1 pl-3 font-mono text-[13px]">
-      <code class="overflow-x-auto whitespace-nowrap">{installCommand}</code>
-      <button
-        type="button"
-        data-copy={installCommand}
-        class="cursor-pointer border border-zinc-300 bg-white px-2 py-0.5 font-sans text-xs text-zinc-700 hover:border-zinc-400 hover:text-zinc-900"
-      >
-        Copy
-      </button>
-    </div>
-    <p class="mt-3 flex gap-4 text-sm">
-      <a href="/getting-started/introduction/" class="text-blue-700 hover:underline">Read the docs →</a>
-      <a href={repoUrl} class="text-blue-700 hover:underline">GitHub</a>
+    <p class="mt-4 flex flex-wrap gap-3">
+      <a href="/getting-started/introduction/" class="btn btn-primary">Read the documentation</a>
+      <a href={repoUrl} class="btn btn-secondary">GitHub</a>
     </p>
 
-    <div class="docs mt-6">
-      <Code code={example} lang="php" theme="github-light" />
-    </div>
+    <section class="mt-8">
+      <h2 class="text-lg font-semibold">Install</h2>
+      <div class="mt-2 flex max-w-md items-center justify-between gap-3 border border-code-border bg-code py-1 pr-1 pl-3 font-mono text-[13px]">
+        <code class="overflow-x-auto whitespace-nowrap">{installCommand}</code>
+        <button
+          type="button"
+          data-copy={installCommand}
+          class="cursor-pointer border border-stone-300 bg-page px-2 py-0.5 font-sans text-xs text-stone-700 hover:border-stone-400 hover:text-stone-900"
+        >
+          Copy
+        </button>
+      </div>
+      <p class="mt-2 text-sm text-stone-600">
+        Requires PHP 8.3 or newer and the <code class="font-mono text-[13px]">mbstring</code> extension.
+      </p>
+    </section>
+
+    <section class="mt-8">
+      <h2 class="text-lg font-semibold">Usage</h2>
+      <div class="mt-2 grid gap-x-8 lg:grid-cols-2">
+        {
+          usage.map((block) => (
+            <div class="min-w-0">
+              <h3 class="mt-4 text-[15px] font-semibold">{block.title}</h3>
+              <p class="text-sm text-stone-600">{block.text}</p>
+              <div class="docs">
+                <Code code={block.code} lang="php" theme="github-light" />
+              </div>
+              <p class="-mt-1 text-sm">
+                <a href={block.link.href} class="text-blue-700 hover:underline">
+                  More in {block.link.label} →
+                </a>
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
 
     <section class="mt-8">
       <h2 class="text-lg font-semibold">See how it scores</h2>
-      <p class="mt-1 text-sm text-zinc-600">
+      <p class="mt-1 text-sm text-stone-600">
         <code class="font-mono text-[13px]">compound</code> runs from -1 to +1. The label uses ±0.05.
       </p>
       <div class="grid gap-x-8 lg:grid-cols-2">
         <div>
-          <p class="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">English</p>
+          <p class="mt-3 text-xs font-medium uppercase tracking-wide text-stone-500">English</p>
           <ResultsTable language="en" compact />
         </div>
         <div>
-          <p class="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">Indonesian</p>
+          <p class="mt-3 text-xs font-medium uppercase tracking-wide text-stone-500">Indonesian</p>
           <ResultsTable language="id" compact />
         </div>
       </div>
@@ -84,7 +179,7 @@ const jsonLd = {
 
     <section class="mt-8">
       <h2 class="text-lg font-semibold">What it handles</h2>
-      <ul class="mt-2 list-disc space-y-0.5 pl-5">
+      <ul class="mt-2 list-disc space-y-0.5 pl-5 lg:columns-2 lg:gap-x-8">
         <li>Negation: "not good" is negative, "not bad at all" is positive.</li>
         <li>Intensifiers: "very", "kind of", "banget".</li>
         <li>Contrast: what follows "but" or "tapi" carries more weight.</li>
@@ -93,6 +188,13 @@ const jsonLd = {
         <li>Custom words and thresholds.</li>
         <li>About {shortTexts} short texts per second on PHP {phpVersion}.</li>
       </ul>
+    </section>
+
+    <section class="mt-8 border-t border-stone-200 pt-5">
+      <p class="text-stone-700">The documentation covers every method, with a short example for each.</p>
+      <p class="mt-3">
+        <a href="/getting-started/introduction/" class="btn btn-primary">Read the documentation</a>
+      </p>
     </section>
   </main>
 </Base>

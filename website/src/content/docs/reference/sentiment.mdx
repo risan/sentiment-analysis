@@ -5,13 +5,29 @@ description: API reference for Risan\Sentiment\Sentiment, the static one-liner f
 
 import Note from '../../../components/Note.astro';
 
+`final class Sentiment` is the shortest way to score a text.
+
 ```php
+use Risan\Sentiment\Language;
 use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('This package is awesome!');
+
+$result->label;    // Label::Positive
+$result->compound; // 0.6588
+
+$result = Sentiment::analyze(
+    'Filmnya bagus banget!',
+    Language::Indonesian,
+);
+
+// The language code gives the same result.
+$result = Sentiment::analyze('Filmnya bagus banget!', 'id');
+
+Sentiment::analyze('Hello', 'xx'); // throws ValueError
 ```
 
-`final class Sentiment` is the shortest way to score a text. It keeps one default [`Analyzer`](/reference/analyzer/) per language, built lazily the first time you ask for it and reused afterwards.
-
-The class has a private constructor and cannot be instantiated. For custom words or thresholds, use [`Analyzer`](/reference/analyzer/) directly.
+The class keeps one default [`Analyzer`](/reference/analyzer/) per language. It builds the analyzer the first time you ask for it and reuses it. The constructor is private, so you cannot create an instance. For custom words or thresholds, use [`Analyzer`](/reference/analyzer/).
 
 <Note>
 Only `Sentiment`, `Analyzer`, `Result`, `Label` and `Language` are public API. Everything under `Risan\Sentiment\Internal` is marked `@internal` and may change in any release.
@@ -21,14 +37,14 @@ Only `Sentiment`, `Analyzer`, `Result`, `Label` and `Language` are public API. E
 
 ### analyze()
 
+Scores a text with the default analyzer of the given language.
+
 ```php
 public static function analyze(
     string $text,
     Language|string $language = Language::English,
 ): Result
 ```
-
-Scores a text with the default analyzer of the given language.
 
 **Parameters**
 
@@ -45,19 +61,4 @@ Scores a text with the default analyzer of the given language.
 |---|---|
 | `ValueError` | `$language` is a string that is not a known code. |
 
-Invalid UTF-8 input never throws: invalid bytes are dropped and the rest of the text is scored. Empty or whitespace-only text returns all zeros and a neutral label.
-
-**Example**
-
-```php
-use Risan\Sentiment\Language;
-use Risan\Sentiment\Sentiment;
-
-$result = Sentiment::analyze('This package is awesome!');
-$result->label; // Label::Positive
-
-$result = Sentiment::analyze('Filmnya bagus banget!', Language::Indonesian);
-$result = Sentiment::analyze('Filmnya bagus banget!', 'id'); // same thing
-
-Sentiment::analyze('Hello', 'xx'); // throws ValueError
-```
+Invalid UTF-8 never throws. The package drops the invalid bytes and scores the rest. Empty or whitespace-only text returns all zeros and a neutral label.

@@ -5,9 +5,11 @@ description: What compound, positive, neutral and negative mean, how the label i
 
 import ResultsTable from '../../../components/ResultsTable.astro';
 
-Every call to `analyze()` returns a [`Result`](/reference/result/) with a label and four numbers. This page explains where they come from.
+This page explains the numbers in a [`Result`](/reference/result/) and what changes them.
 
 ```php
+use Risan\Sentiment\Sentiment;
+
 $result = Sentiment::analyze('VADER is smart, handsome, and funny.');
 
 $result->compound; // 0.8316
@@ -19,27 +21,29 @@ $result->label;    // Label::Positive
 
 ## Compound
 
-`compound` is the one number to use when you want a single score. It runs from **-1** (extremely negative) to **+1** (extremely positive), rounded to four decimals.
+`compound` is the one number to use when you want a single score. It runs from **-1** (extremely negative) to **+1** (extremely positive), with four decimals.
 
-It is computed in three steps:
+In the example, `0.8316` is close to +1. The text is clearly positive.
 
-1. Every word found in the lexicon contributes its valence (-4 to +4), adjusted by the rules below.
-2. The valences are summed.
-3. The sum is normalized so it always lands between -1 and +1. Long, strongly worded text approaches the limits but never passes them.
+The package computes it in three steps:
 
-Because of that last step, a compound of `0.5` does not mean "50% positive". Read it as a position on a scale: close to 0 is neutral, close to ±1 is emphatic.
+1. Each word in the lexicon adds its score (-4 to +4). The rules below adjust it.
+2. The package adds up the scores.
+3. It squashes the sum so it always lands between -1 and +1.
+
+Because of the last step, a compound of `0.5` does not mean "50% positive". Read it as a position on a scale. Near 0 is neutral. Near -1 or +1 is strong.
 
 ## Positive, neutral and negative
 
-`positive`, `neutral` and `negative` are **ratios** between 0 and 1, rounded to three decimals. They show how the text splits between positive signal, negative signal and everything else, and they add up to about 1.
+These three numbers are **shares** of the weighted sentiment signal. Each is between 0 and 1, with three decimals. They add up to about 1.
 
-For `VADER is smart, handsome, and funny.`, 74.6% of the signal is positive, none is negative, and the remaining 25.4% is neutral (words with no sentiment, such as `VADER` and `is`).
+In the example, 74.6% of the weighted sentiment signal is positive and none is negative. The other 25.4% is neutral. Words with no sentiment, such as `VADER` and `is`, count toward the neutral share. Strong words weigh more than mild words.
 
-These ratios are not probabilities. A text that is mostly neutral words with one mildly positive word can have a high `neutral` and still a clearly positive `compound`. Use them to see how a text is built, and use `compound` (or the label) to decide.
+They are not probabilities. A text with many neutral words and one mild positive word has a high `neutral` and still a positive `compound`. To decide, use `compound` or the label. Use the three shares to see how a text is built.
 
 ## Label
 
-The [`Label`](/reference/label/) is derived from `compound` and the [threshold](/guides/thresholds/):
+The [`Label`](/reference/label/) comes from `compound` and the [threshold](/guides/thresholds/):
 
 | Condition | Label |
 |---|---|
@@ -47,15 +51,26 @@ The [`Label`](/reference/label/) is derived from `compound` and the [threshold](
 | `compound <= -threshold` (and below 0) | `Label::Negative` |
 | anything else | `Label::Neutral` |
 
-The default threshold is `0.05`, the value recommended by the VADER authors.
+The default threshold is `0.05`. The VADER authors recommend this value.
 
 ## What changes a score
 
-The model does not just add up word values. These rules shape the result:
+The package does more than add up word scores. Here is how emphasis changes the compound score of the same word:
+
+```php
+use Risan\Sentiment\Sentiment;
+
+Sentiment::analyze('not good')->compound;     // -0.3412
+Sentiment::analyze('good')->compound;         // 0.4404
+Sentiment::analyze('very good')->compound;    // 0.4927
+Sentiment::analyze('VERY good!!!')->compound; // 0.7005
+```
+
+These are the rules:
 
 | Rule | Example | Effect |
 |---|---|---|
-| Negation | `not good` | Flips and softens the word |
+| Negation | `not good` | Flips the word and softens it |
 | Intensifier | `very good`, `extremely bad` | Strengthens the word |
 | Dampener | `kind of good`, `slightly bad` | Weakens the word |
 | ALL CAPS | `this is GREAT` | Strengthens the shouted word |
@@ -64,9 +79,26 @@ The model does not just add up word values. These rules shape the result:
 | Contrast | `good food but terrible service` | The part after "but" weighs more |
 | Emoticons and emoji | `:)`, `❤️`, `😠` | Count as sentiment words |
 
-For example, these English texts are in increasing order of positivity: `not good`, `good`, `very good`, `VERY good!!!`.
+Indonesian has the same rules. It adds intensifiers that come after the word (`bagus banget`), contrast words such as `tapi` and `namun`, and informal negations such as `gak`. See [Languages](/guides/languages/).
 
-Indonesian has the same rules plus intensifiers that come after the word (`bagus banget`), contrast words such as `tapi` and `namun`, and informal negations such as `gak`. See [Languages](/guides/languages/).
+### Negation reaches three words back
+
+A negation flips a sentiment word when it comes up to three words before it:
+
+```php
+use Risan\Sentiment\Sentiment;
+
+Sentiment::analyze('The food was not good.')->compound;
+// -0.3412
+
+Sentiment::analyze('The food was not at all good.')->compound;
+// -0.3412
+
+Sentiment::analyze('The food was not a thing that was good.')->compound;
+// 0.4404
+```
+
+In the last text, `not` is five words away from `good`. It is too far to count, so `good` keeps its positive score.
 
 ## Examples
 
@@ -74,7 +106,7 @@ Indonesian has the same rules plus intensifiers that come after the word (`bagus
 
 ## Tips
 
-- **Classify with the label**, rank with `compound`.
+- **Use the label to classify.** Use `compound` to rank.
 - **Empty or whitespace-only text** gives all zeros and a neutral label.
-- **Text with no known words** is neutral. The model only knows what its lexicon knows; [add your own words](/guides/customizing-the-lexicon/) for domain slang.
-- **Long text** is better analyzed sentence by sentence. See [Long text](/guides/long-text/).
+- **Text with no known words** is neutral. The package only knows the words in its lexicon. [Add your own words](/guides/customizing-the-lexicon/) for slang from your field.
+- **Long text** works better one sentence at a time. See [Long text](/guides/long-text/).

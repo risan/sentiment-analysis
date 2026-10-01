@@ -1,140 +1,125 @@
-# Sentiment Analysis
+# Sentiment Analysis for PHP
 
-Fast, dependency-free sentiment analysis for PHP. English and Indonesian, no API calls, no
-training: it scores text with a lexicon and a small set of rules (negation, intensifiers,
-contrast, ALL CAPS, punctuation, emoticons and emoji).
-
-```php
-use Risan\Sentiment\Sentiment;
-
-$result = Sentiment::analyze('This package is awesome!');
-
-$result->label;    // Label::Positive
-$result->compound; // 0.6588
-```
+Scores English and Indonesian text as positive, negative or neutral. Pure PHP 8.3+, no API calls, no dependencies.
 
 Documentation and live examples: <https://sentiment-analysis.risanb.com>
 
-## Features
-
-- English scoring that matches [VADER](https://github.com/cjhutto/vaderSentiment) 3.3.2
-  (checked against more than 2,700 reference scores).
-- Indonesian support: negation, boosters before and after the word (`bagus banget`), contrast
-  words (`tapi`), informal spellings, emoji.
-- No runtime dependencies besides `ext-mbstring`. No network calls.
-- Fast and small: tens of thousands of short texts per second, a few MB of memory.
-- A small, immutable API with typed results.
-
-## Installation
+## Install
 
 ```bash
 composer require risan/sentiment-analysis
 ```
 
-Requires PHP 8.3 or newer and `ext-mbstring`.
+Requires PHP 8.3 or newer and the `mbstring` extension.
 
-## Quick start
+## Usage
+
+### Analyze a text
+
+Pass a string. You get a result with a label and a compound score.
 
 ```php
-<?php
+use Risan\Sentiment\Sentiment;
 
-require __DIR__ . '/vendor/autoload.php';
+$result = Sentiment::analyze(
+    'This package is awesome!',
+);
 
+$result->label;    // Label::Positive
+$result->compound; // 0.6588
+```
+
+`compound` runs from -1 (very negative) to +1 (very positive). The label comes from `compound`.
+
+### Read the result
+
+The three shares add up to about 1. Three methods check the label.
+
+```php
+$result->positive; // 0.594
+$result->neutral;  // 0.406
+$result->negative; // 0.0
+
+$result->isPositive(); // true
+$result->isNegative(); // false
+$result->isNeutral();  // false
+```
+
+### Export the result
+
+Turn the result into an array, or encode it as JSON.
+
+```php
+$result->toArray();
+// ['label' => 'positive', 'compound' => 0.6588,
+//  'positive' => 0.594, 'negative' => 0.0,
+//  'neutral' => 0.406]
+
+json_encode($result);
+// {"label":"positive","compound":0.6588,
+//  "positive":0.594,"negative":0,
+//  "neutral":0.406}
+```
+
+### Analyze Indonesian
+
+Pass the language as an enum case, or as the code `'id'`. An unknown code throws a `ValueError`.
+
+```php
 use Risan\Sentiment\Language;
 use Risan\Sentiment\Sentiment;
 
-$english = Sentiment::analyze('This package is awesome!');
-$indonesian = Sentiment::analyze('Filmnya bagus banget!', Language::Indonesian);
+$result = Sentiment::analyze(
+    'Filmnya bagus banget!',
+    Language::Indonesian,
+);
 
-echo $english->label->value;    // positive
-echo $indonesian->label->value; // positive
-echo json_encode($english);     // {"label":"positive","compound":0.6588,"positive":0.594,"negative":0,"neutral":0.406}
+$result->label;    // Label::Positive
+$result->compound; // 0.623
+
+Sentiment::analyze('Filmnya bagus banget!', 'id');
 ```
 
-The language can also be given as a code: `Sentiment::analyze('Filmnya bagus banget!', 'id')`.
-An unknown code throws a `ValueError`.
+### Customize the analyzer
 
-### Reading the result
-
-| Property | Meaning |
-| --- | --- |
-| `compound` | Overall score from -1 (most negative) to 1 (most positive), 4 decimals. |
-| `positive`, `negative`, `neutral` | Share of the text that is positive, negative or neutral, 3 decimals. |
-| `label` | `Label::Positive`, `Label::Negative` or `Label::Neutral`, from `compound` and the threshold. |
-
-`isPositive()`, `isNegative()`, `isNeutral()` and `toArray()` are available too; a `Result` is
-`JsonSerializable`.
-
-## Customizing
-
-`Analyzer` is immutable: every `with*()` method returns a new instance.
+Add or remove words and change the threshold. Every `with*()` call returns a new analyzer.
 
 ```php
 use Risan\Sentiment\Analyzer;
 use Risan\Sentiment\Language;
 
 $analyzer = (new Analyzer(Language::Indonesian))
-    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0]) // add or override valences (-4..4)
-    ->withoutWords(['kasar'])                      // drop words from the lexicon
-    ->withThreshold(0.1);                          // neutral band is (-0.1, 0.1)
+    ->withWords(['cuan' => 2.5])
+    ->withoutWords(['kasar'])
+    ->withThreshold(0.1);
 
-$analyzer->analyze('Filmnya bapuk banget')->label; // Label::Negative
+$result = $analyzer->analyze('Investasinya cuan!');
+
+$result->label;    // Label::Positive
+$result->compound; // 0.5848
 ```
 
-The default threshold is 0.05, VADER's published value. A text is `Positive` when
-`compound >= threshold`, `Negative` when `compound <= -threshold`, and `Neutral` otherwise.
+The default threshold is 0.05. A text is positive when `compound` is at least the threshold. It is negative when `compound` is at most minus the threshold. Otherwise it is neutral.
 
-### Long text
-
-The scoring works best on a sentence at a time. For a longer text, score each sentence and
-average:
-
-```php
-$sentences = preg_split('/(?<=[.!?])\s+/u', $review, -1, PREG_SPLIT_NO_EMPTY);
-$scores = array_map(fn (string $sentence): float => Sentiment::analyze($sentence)->compound, $sentences);
-$average = array_sum($scores) / count($scores);
-```
+More in the documentation: [understanding the scores](https://sentiment-analysis.risanb.com/guides/understanding-scores/), [languages](https://sentiment-analysis.risanb.com/guides/languages/), [customizing the lexicon](https://sentiment-analysis.risanb.com/guides/customizing-the-lexicon/), [thresholds](https://sentiment-analysis.risanb.com/guides/thresholds/) and [long text](https://sentiment-analysis.risanb.com/guides/long-text/).
 
 ## How it works
 
-The engine is a PHP port of VADER's rules (Hutto & Gilbert, 2014): a lexicon of word valences,
-adjusted for negation within three words, intensifiers and dampeners ("very", "kind of"), the
-contrast word "but", ALL CAPS, exclamation and question marks, and emoticons and emoji.
-Indonesian runs the same engine with Indonesian data: its own lexicon, negations, boosters
-before and after the word, and contrast words.
+The engine is a PHP version of [VADER](https://github.com/cjhutto/vaderSentiment) (Hutto & Gilbert, 2014).
 
-Two deliberate differences from the VADER reference code, both bug fixes: the weighting around
-"but" is applied by position (the reference mis-scales repeated valences), and the emoji
-variation selector (U+FE0F) is ignored so that "❤️" scores like "❤". Invalid UTF-8 never throws:
-the bad bytes are dropped.
+1. A lexicon gives each known word a score from -4 to +4.
+2. Rules adjust the scores in context: negation, intensifiers and dampeners ("very", "kind of"), the contrast word "but", ALL CAPS, `!` and `?`, emoticons and emoji.
+3. The package adds up the scores and squashes the sum into `compound`, between -1 and +1.
 
-The Indonesian lexicon was written for this package. It does not use any existing Indonesian
-sentiment lexicon. It is a lexicon method: it does not understand sarcasm, regional languages or
-domain-specific words, and accuracy is below what a fine-tuned model reaches. On the test split
-of [IndoNLU SmSA](https://github.com/IndoNLP/indonlu) (500 reviews and comments, three classes,
-default threshold) it reaches 81.2% accuracy and 0.744 macro F1; always guessing the most common
-class gives 41.6% accuracy. Reproduce it with `php tools/evaluate-id.php --split=test`. More
-detail is in the documentation.
+English uses the original VADER lexicon and rules. Its scores match `vaderSentiment` 3.3.2 on more than 2,700 reference scores, with two deliberate fixes. Indonesian runs the same engine with a lexicon and rules written for this project. It handles negation, intensifiers before and after the word (`bagus banget`), contrast words (`tapi`), informal spellings and emoji.
 
-## Performance
+It is a lexicon method. It does not understand sarcasm, regional languages or words from your own field. [How it works, in the docs](https://sentiment-analysis.risanb.com/getting-started/introduction/).
 
-Measured with `php benchmarks/run.php` on PHP 8.5 (CLI, Docker on a Windows laptop with WSL2, so
-treat the numbers as a rough guide), OPcache on and off:
+## Accuracy and performance
 
-| Text | Words | Analyses per second, OPcache on | Analyses per second, OPcache off |
-| --- | --- | --- | --- |
-| Tweet, English | 17 | about 80,000 | about 66,000 |
-| Review, English | 106 | about 14,000 | about 12,000 |
-| Long text, English | 2,120 | about 770 | about 650 |
-| Tweet, Indonesian | 10 | about 66,000 | about 57,000 |
-| Review, Indonesian | 93 | about 14,000 | about 12,000 |
-| Long text, Indonesian | 1,860 | about 770 | about 670 |
+On the test split of [IndoNLU SmSA](https://github.com/IndoNLP/indonlu), Indonesian scoring reaches 81.2% accuracy and 0.744 macro F1. The split has 500 reviews and comments in three classes, and the test uses the default threshold. Always guessing the most common class gives 41.6% accuracy. A fine-tuned model reaches more. Reproduce the numbers with `php tools/evaluate-id.php --split=test`. See [Languages](https://sentiment-analysis.risanb.com/guides/languages/).
 
-These are single runs and vary by 10% or more between runs. The lexicons are plain PHP array
-files. With OPcache they live in shared memory and cost almost nothing per process; without it
-they load once per process (about 1 MB for English, 0.5 MB for Indonesian). The peak memory of
-the whole benchmark process, with both languages loaded, is about 2 MB with OPcache and about
-3 MB without.
+With OPcache on, the package scores about 80,000 short English texts per second and about 14,000 reviews per second. These are single runs on PHP 8.5, on a laptop with Docker on WSL2. They vary by 10% or more. The whole benchmark process peaks at about 2 MB. Run `php benchmarks/run.php` on your own hardware. See [Performance](https://sentiment-analysis.risanb.com/guides/performance/).
 
 ## Development
 
@@ -147,10 +132,10 @@ composer bench         # throughput and memory
 composer build:lexicons # regenerate resources/ from tools/data/
 ```
 
-`resources/` is generated from `tools/data/`; `composer build:lexicons` must be re-run after
-editing the sources, and a test fails when they drift apart.
+`resources/` is generated from `tools/data/`. Run `composer build:lexicons` after you edit the sources. A test fails when they drift apart.
+
+The examples in this README, on the website and in the docs are checked by `tests/Feature/DocsExamplesTest.php`.
 
 ## Credits and license
 
-MIT, see [LICENSE.md](LICENSE.md). Third-party notices, including VADER's license and citation,
-are in [NOTICE.md](NOTICE.md).
+MIT, see [LICENSE.md](LICENSE.md). Third-party notices, including VADER's license and citation, are in [NOTICE.md](NOTICE.md).

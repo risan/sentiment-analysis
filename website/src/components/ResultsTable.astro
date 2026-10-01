@@ -38,7 +38,19 @@ const languageNames = { en: 'English', id: 'Indonesian' };
               {!language && <span class="lang">{languageNames[row.language]}</span>}
             </td>
             <td class={`label-${row.label}`}>{row.label}</td>
-            <td class="num">{row.compound.toFixed(4)}</td>
+            <td class="num">
+              <span class="compound">
+                <span class="bar" aria-hidden="true">
+                  {row.compound !== 0 && (
+                    <span
+                      class:list={['bar-fill', row.compound > 0 ? 'bar-fill-positive' : 'bar-fill-negative']}
+                      style={`width: ${Math.abs(row.compound) * 50}%`}
+                    />
+                  )}
+                </span>
+                <span>{row.compound.toFixed(4)}</span>
+              </span>
+            </td>
             {
               !compact && (
                 <>

@@ -3,87 +3,107 @@ title: Customizing the lexicon
 description: Add, override or remove words with Analyzer::withWords() and withoutWords() to adapt sentiment scores to your domain, slang or brand vocabulary.
 ---
 
-The lexicon is the list of words and the sentiment valence each carries. The defaults are good for general text, but your domain may disagree. In a gaming forum `sick` is praise. In a medical text `positive` may be bad news. For that, use an [`Analyzer`](/reference/analyzer/).
+The lexicon is the word list. Each word has a score. The default scores suit general text, but your field may disagree. In a gaming forum, `sick` is praise. Use an [`Analyzer`](/reference/analyzer/) to change the list.
 
-## Valence scale
+```php
+use Risan\Sentiment\Analyzer;
 
-A valence is a number from **-4** (extremely negative) to **+4** (extremely positive). As a rough guide:
+$text = 'That trick was sick!';
 
-| Valence | Feels like |
-|---|---|
-| ±0.5 | faint |
-| ±1.5 | mild |
-| ±2.5 | clear |
-| ±3.5 | extreme |
+(new Analyzer())->analyze($text)->label;
+// Label::Negative
 
-Pick values by comparing with words the lexicon already knows: if `good` is about 1.9 and `great` about 3.1, a word that means "better than good, not quite great" belongs near 2.5.
+$gaming = (new Analyzer())->withWords(['sick' => 2.0]);
+
+$gaming->analyze($text)->label;
+// Label::Positive
+```
 
 ## Add or override words
 
-`withWords()` takes an array of `word => valence`. New words are added, and existing words get the new value.
+`withWords()` takes an array of `word => score`. A new word is added. An existing word gets the new score.
 
 ```php
 use Risan\Sentiment\Analyzer;
 use Risan\Sentiment\Language;
 
 $analyzer = (new Analyzer(Language::Indonesian))
-    ->withWords([
-        'cuan' => 2.5,
-        'bapuk' => -2.0,
-    ]);
+    ->withWords(['cuan' => 2.5, 'bapuk' => -2.0]);
 
 $analyzer->analyze('Investasinya cuan!')->isPositive(); // true
 ```
 
-Keys are lower-cased for you, and matching ignores the case of the text, so `cuan`, `Cuan` and `CUAN` all hit the same entry. Values can be ints or floats.
+The package lower-cases your keys. It also ignores the case of the text. So `cuan`, `Cuan` and `CUAN` all match the same entry. A score can be an int or a float.
 
-Override a word that does not fit your domain:
+## Choose a score
 
-```php
-$analyzer = (new Analyzer())->withWords(['sick' => 2.0]);
+A score runs from **-4** (extremely negative) to **+4** (extremely positive). As a rough guide:
 
-$analyzer->analyze('That trick was sick!')->isPositive(); // true
-```
+| Score | Feels like |
+|---|---|
+| ±0.5 | faint |
+| ±1.5 | mild |
+| ±2.5 | clear |
+| ±3.5 | extreme |
+
+Compare with words the lexicon already knows. If `good` is about 1.9 and `great` is about 3.1, a word that means "better than good, not quite great" belongs near 2.5.
 
 ## Remove words
 
-`withoutWords()` takes a list of words to drop from the lexicon. They then count as plain neutral words.
+`withoutWords()` takes a list of words to drop. They then count as plain neutral words.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
+$text = 'We will kill it at the launch.';
+
+(new Analyzer())->analyze($text)->label;
+// Label::Negative
+
 $analyzer = (new Analyzer())->withoutWords(['kill']);
 
-$analyzer->analyze('We will kill it at the launch.')->isNegative(); // false
+$analyzer->analyze($text)->label;
+// Label::Neutral
 ```
 
 ## Rules for words
 
-A key must be a single token: it cannot be empty and cannot contain whitespace. The valence must be a number between -4 and 4. Otherwise an `InvalidArgumentException` is thrown straight away, with a message that says what is wrong.
+A key must be one word. It cannot be empty and it cannot contain whitespace. The score must be a number from -4 to 4. Otherwise the package throws an `InvalidArgumentException` at once, with a message that says what is wrong.
 
 ```php
-(new Analyzer())->withWords(['very good' => 3.0]); // InvalidArgumentException (whitespace)
-(new Analyzer())->withWords(['great' => 9]);       // InvalidArgumentException (outside -4..4)
+use Risan\Sentiment\Analyzer;
+
+(new Analyzer())->withWords(['very good' => 3.0]);
+// InvalidArgumentException (whitespace)
+
+(new Analyzer())->withWords(['great' => 9]);
+// InvalidArgumentException (outside -4..4)
 ```
 
-Multi-word phrases are not supported. Add the words separately.
+Phrases with more than one word are not supported. Add the words one by one.
 
 ## Analyzers are immutable
 
-Every `with*()` call returns a **new** analyzer and leaves the original unchanged, so it is safe to derive several analyzers from one base and to share them across your application:
+Every `with*()` call returns a **new** analyzer. The original stays the same. You can derive several analyzers from one base and share them across your application.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $base = new Analyzer();
 $gaming = $base->withWords(['sick' => 2.0]);
 
-$gaming->analyze('sick')->label; // Label::Positive
+$gaming->analyze('sick')->label;
+// Label::Positive
 
-// $base still scores 'sick' with the stock valence.
-$base->analyze('sick')->compound < $gaming->analyze('sick')->compound; // true
+// $base still uses the default score for 'sick'.
+$base->analyze('sick')->compound < $gaming->analyze('sick')->compound;
+// true
 ```
 
-Build your customized analyzer once (a service container binding or a static property works well) and reuse it instead of rebuilding it for every text.
+Build your custom analyzer once and reuse it. A service container binding or a static property works well. Do not rebuild it for every text.
 
 ## Words that are also rules
 
-Negations (`not`, `tidak`) and intensifiers (`very`, `sangat`) are part of the language rules, not the lexicon. Use `withWords()` for words that carry sentiment. Everything else, including emoticons such as `:)` and slang, is a normal lexicon entry.
+Negations (`not`, `tidak`) and intensifiers (`very`, `sangat`) belong to the language rules, not to the lexicon. Use `withWords()` for words that carry sentiment. Emoticons such as `:)` and slang are normal lexicon entries.
 
-Do not give a negation or an intensifier a valence with `withWords()`. As in VADER, the word then becomes a lexicon word and its behavior changes: a `very` with a valence no longer strengthens the word after it, and a `not` with a valence adds a score of its own. Leave these words out of `withWords()`.
+Do not give a negation or an intensifier a score with `withWords()`. As in VADER, the word then becomes a lexicon word and acts differently. A `very` with a score no longer strengthens the next word. A `not` with a score adds a score of its own.

@@ -5,92 +5,119 @@ description: Migrate from Sentiment Analysis for PHP 1.x to 2.0. New namespace, 
 
 import Note from '../../components/Note.astro';
 
-Version 2 is a complete rewrite. It has a new namespace, a new API and a different scoring model, so treat the upgrade as a small migration rather than a version bump.
+Version 2 is a complete rewrite. It has a new namespace, a new API and a different scoring model. Treat the upgrade as a small migration, not a version bump.
+
+Here is the same task in both versions. The v1 code is for reference only. It cannot run against v2.
+
+**v1**
+
+```php
+$analyzer = SentimentAnalysis\Analyzer::withDefaultConfig();
+
+$result = $analyzer->analyze('This package is awesome!');
+
+echo $result->category();
+```
+
+**v2**
+
+```php
+use Risan\Sentiment\Sentiment;
+
+$result = Sentiment::analyze('This package is awesome!');
+
+echo $result->label->value; // positive
+```
 
 ## What changed
 
 | | v1 | v2 |
 |---|---|---|
-| PHP | 5.x era | 8.3 or newer, plus `ext-mbstring` |
+| PHP | No version in `composer.json`; tested on PHP 5.5 to 7 | 8.3 or newer, plus `ext-mbstring` |
 | Namespace | `SentimentAnalysis\` | `Risan\Sentiment\` |
-| Model | Word lists with a naive Bayes-style product | VADER: valence lexicon plus rules for negation, boosters, caps, punctuation, emoji |
+| Model | Word lists and a naive Bayes-style product | VADER: a lexicon of word scores plus rules for negation, boosters, caps, punctuation and emoji |
 | Languages | English | English and Indonesian |
-| Result | `category()` and `scores()` | a `Result` object with `label`, `compound`, `positive`, `negative`, `neutral` |
-| Customizing | Replace dictionary files and classes | `withWords()`, `withoutWords()`, `withThreshold()` |
-| Interfaces | `Contracts\*Interface` | none: five small final classes |
+| Result | `category()` and `scores()` | A `Result` object with `label`, `compound`, `positive`, `negative` and `neutral` |
+| Customizing | Your own dictionary files and classes | `withWords()`, `withoutWords()` and `withThreshold()` |
+| Interfaces | `Contracts\*Interface` | None. Five small final classes |
 
-## Side by side
+## Getting the scores
 
-### Analyzing a text
-
-<p class="caption">v1</p>
-
-```php
-$analyzer = SentimentAnalysis\Analyzer::withDefaultConfig();
-
-$result = $analyzer->analyze('This PHP package is awesome');
-
-echo $result->category(); // 'positive'
-```
-
-<p class="caption">v2</p>
-
-```php
-use Risan\Sentiment\Sentiment;
-
-$result = Sentiment::analyze('This PHP package is awesome');
-
-echo $result->label->value; // 'positive'
-```
-
-### Getting the scores
-
-<p class="caption">v1</p>
+**v1**
 
 ```php
 $result->scores();
 // ['positive' => ..., 'negative' => ..., 'neutral' => ...]
 ```
 
-<p class="caption">v2</p>
+**v2**
 
 ```php
 $result->toArray();
-// ['label' => 'positive', 'compound' => ..., 'positive' => ..., 'negative' => ..., 'neutral' => ...]
+// [
+//     'label' => 'positive',
+//     'compound' => 0.6588,
+//     'positive' => 0.594,
+//     'negative' => 0.0,
+//     'neutral' => 0.406,
+// ]
 
-$result->positive;
-$result->negative;
-$result->neutral;
+$result->positive; // 0.594
+$result->negative; // 0.0
+$result->neutral;  // 0.406
 ```
 
-### Mapping table
+## Custom words
+
+**v1** read the words from your own data folder. It had one PHP file per list: `positive.php`, `negative.php`, `neutral.php`, `negation.php` and `ignored.php`.
+
+```php
+$analyzer = new SentimentAnalysis\Analyzer(
+    new SentimentAnalysis\Dictionary('/path/to/data'),
+    new SentimentAnalysis\Tokenizer(),
+    new SentimentAnalysis\TokenValidator()
+);
+```
+
+**v2** gives each word a score from -4 to 4 instead:
+
+```php
+use Risan\Sentiment\Analyzer;
+
+$analyzer = (new Analyzer())
+    ->withWords(['sick' => 2.0])
+    ->withoutWords(['kill']);
+```
+
+## Mapping table
 
 | v1 | v2 |
 |---|---|
 | `Analyzer::withDefaultConfig()` | `Sentiment::analyze($text)`, or `new Analyzer()` |
-| `$analyzer->analyze($text)` | `$analyzer->analyze($text)` (same method name, new `Result`) |
+| `$analyzer->analyze($document)` | `$analyzer->analyze($text)`. Same method name, new `Result` |
 | `$result->category()` | `$result->label` (a `Label` enum), or `$result->label->value` for the string |
 | `$result->scores()` | `$result->toArray()`, or the typed properties |
 | `$result->scores()['positive']` | `$result->positive` |
-| Custom dictionary files | `$analyzer->withWords([...])` and `withoutWords([...])` |
+| `new Dictionary($dataDirectory)` with your own files | `$analyzer->withWords([...])` and `withoutWords([...])` |
+| `Tokenizer`, `TokenValidator` and the `Contracts\*Interface` interfaces | No replacement. Clean up the text before you call `analyze()` |
 
 ## Things that behave differently
 
 <Note type="caution">
-Scores are **not comparable** across versions. The numbers have a different meaning, so do not carry over stored scores or tuned cut-offs.
+Scores are **not comparable** across versions. The numbers mean something else, so do not carry over stored scores or tuned cut-offs.
 </Note>
 
-- **Scores are no longer probabilities.** In v1 the three scores were normalized to sum to 1 and the category was the largest one. In v2 `positive`, `negative` and `neutral` are ratios of signal in the text, and the label comes from the `compound` score and a [threshold](/guides/thresholds/).
-- **Neutral is a real outcome.** v1 picked the largest of three scores. v2 calls a text neutral when its compound score is close to zero. Empty text and text without any known word are neutral.
-- **Context matters.** `not good`, `very good`, `GOOD!!!` and `good, but…` score differently, where v1 mostly counted words. See [Understanding the scores](/guides/understanding-scores/).
-- **Text handling is stricter and safer.** Invalid UTF-8 never throws, and results do not depend on the host's `mb_internal_encoding()`.
-- **No interfaces to implement.** If you swapped in your own tokenizer, dictionary or validator, move that customization to `withWords()` and `withoutWords()`, or pre-process the text before calling `analyze()`.
+- **Scores are no longer probabilities.** In v1, the three scores added up to 1 and the category was the largest one. In v2, `positive`, `negative` and `neutral` are shares of the weighted sentiment signal. The label comes from the `compound` score and a [threshold](/guides/thresholds/).
+- **Neutral is a real result.** v2 calls a text neutral when its compound score is close to zero. Empty text and text with no known word are neutral.
+- **Context matters.** `not good`, `very good`, `GOOD!!!` and `good, but…` get different scores. v1 mostly counted words. See [Understanding the scores](/guides/understanding-scores/).
+- **Text handling is stricter and safer.** Invalid UTF-8 never throws. Results do not depend on the `mb_internal_encoding()` of the host.
+- **No interfaces to implement.** Did you use your own tokenizer, dictionary or validator? Move that work to `withWords()` and `withoutWords()`. Or clean up the text before you call `analyze()`.
 
 ## Migration checklist
 
-1. Require PHP 8.3 or newer and run `composer require risan/sentiment-analysis:^2.0`.
-2. Replace `SentimentAnalysis\` imports with `Risan\Sentiment\`.
-3. Replace `Analyzer::withDefaultConfig()` with `Sentiment::analyze()`, or with a shared `new Analyzer()` if you analyze a lot of texts.
-4. Replace `category()` with `$result->label`, and `scores()` with `toArray()` or the properties.
-5. Re-check any cut-offs or stored scores against the new scale. Start with the default [threshold](/guides/thresholds/) and tune from there.
-6. Move custom dictionaries to [`withWords()`](/guides/customizing-the-lexicon/).
+1. Use PHP 8.3 or newer. Run `composer require risan/sentiment-analysis:^2.0`.
+2. Replace the `SentimentAnalysis\` imports with `Risan\Sentiment\`.
+3. Replace `Analyzer::withDefaultConfig()` with `Sentiment::analyze()`. If you analyze many texts with custom words, share one `new Analyzer()` instead.
+4. Replace `category()` with `$result->label`. Replace `scores()` with `toArray()` or the properties.
+5. Check your cut-offs and stored scores against the new scale. Start with the default [threshold](/guides/thresholds/) and tune from there.
+6. Move your custom dictionaries to [`withWords()`](/guides/customizing-the-lexicon/).
