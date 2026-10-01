@@ -5,11 +5,7 @@ description: API reference for Risan\Sentiment\Result, the immutable value objec
 
 import Note from '../../../components/Note.astro';
 
-```php
-use Risan\Sentiment\Result;
-```
-
-`final readonly class Result implements JsonSerializable` is what `Sentiment::analyze()` and `Analyzer::analyze()` return. Its properties are read-only, so a result can be passed around and cached safely. You normally never construct one yourself.
+`final readonly class Result implements JsonSerializable` is what `Sentiment::analyze()` and `Analyzer::analyze()` return.
 
 ```php
 $result = Sentiment::analyze('VADER is smart, handsome, and funny.');
@@ -21,61 +17,59 @@ $result->negative; // 0.0
 $result->neutral;  // 0.254
 ```
 
+The properties are read-only, so you can pass a result around and cache it safely. You normally never create one yourself.
+
 ## Properties
 
 | Property | Type | Range | Description |
 |---|---|---|---|
-| `$label` | [`Label`](/reference/label/) | | The verdict, derived from `compound` and the analyzer's threshold. |
-| `$compound` | `float` | -1 to 1 | Overall score, rounded to 4 decimals. Negative means negative sentiment. |
-| `$positive` | `float` | 0 to 1 | Share of positive signal, rounded to 3 decimals. |
-| `$negative` | `float` | 0 to 1 | Share of negative signal, rounded to 3 decimals. |
-| `$neutral` | `float` | 0 to 1 | Share of neutral content, rounded to 3 decimals. |
+| `$label` | [`Label`](/reference/label/) | | The verdict. It comes from `compound` and the threshold of the analyzer. |
+| `$compound` | `float` | -1 to 1 | Overall score, with 4 decimals. Negative means negative sentiment. |
+| `$positive` | `float` | 0 to 1 | Share of positive signal, with 3 decimals. |
+| `$negative` | `float` | 0 to 1 | Share of negative signal, with 3 decimals. |
+| `$neutral` | `float` | 0 to 1 | Share of neutral content, with 3 decimals. |
 
-`positive`, `negative` and `neutral` add up to about 1. Empty text gives `0.0` for the compound and all three ratios. See [Understanding the scores](/guides/understanding-scores/).
+`positive`, `negative` and `neutral` add up to about 1. Empty text gives `0.0` for the compound and for all three shares. See [Understanding the scores](/guides/understanding-scores/).
 
 <Note>
-The compound score is never `-0.0`. A negative zero is normalized to `0.0`.
+The compound score is never `-0.0`. The package turns a negative zero into `0.0`.
 </Note>
 
 ## Methods
 
 ### isPositive()
 
+Returns true when `$label` is `Label::Positive`.
+
 ```php
 public function isPositive(): bool
 ```
 
-True when `$label` is `Label::Positive`.
-
 ### isNegative()
+
+Returns true when `$label` is `Label::Negative`.
 
 ```php
 public function isNegative(): bool
 ```
 
-True when `$label` is `Label::Negative`.
-
 ### isNeutral()
+
+Returns true when `$label` is `Label::Neutral`.
 
 ```php
 public function isNeutral(): bool
 ```
 
-True when `$label` is `Label::Neutral`.
+For the result above:
 
 ```php
-$result = Sentiment::analyze('VADER is smart, handsome, and funny.');
-
 $result->isPositive(); // true
 $result->isNegative(); // false
 $result->isNeutral();  // false
 ```
 
 ### toArray()
-
-```php
-public function toArray(): array
-```
 
 Returns the result as a plain array. The label is its string value.
 
@@ -90,17 +84,22 @@ $result->toArray();
 // ]
 ```
 
+```php
+public function toArray(): array
+```
+
 ### jsonSerialize()
+
+Returns the same array as `toArray()`. `json_encode()` calls it, so you can encode a result directly.
+
+```php
+echo json_encode($result);
+// {"label":"positive","compound":0.8316,"positive":0.746,
+//  "negative":0,"neutral":0.254}
+```
 
 ```php
 public function jsonSerialize(): array
 ```
 
-Called by `json_encode()`. It returns the same shape as `toArray()`, so you can encode a result directly.
-
-```php
-echo json_encode($result);
-// {"label":"positive","compound":0.8316,"positive":0.746,"negative":0,"neutral":0.254}
-```
-
-PHP drops the trailing `.0` of whole floats in JSON, so `0.0` is encoded as `0`. Pass `JSON_PRESERVE_ZERO_FRACTION` if you want `0.0`.
+PHP drops the trailing `.0` of whole floats in JSON, so `0.0` becomes `0`. Pass `JSON_PRESERVE_ZERO_FRACTION` to keep `0.0`.

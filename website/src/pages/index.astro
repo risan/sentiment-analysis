@@ -17,7 +17,9 @@ const usage = [
     link: { href: '/getting-started/quick-start/', label: 'Quick start' },
     code: `use Risan\\Sentiment\\Sentiment;
 
-$result = Sentiment::analyze('This package is awesome!');
+$result = Sentiment::analyze(
+    'This package is awesome!',
+);
 
 $result->label;    // Label::Positive
 $result->compound; // 0.6588`,

@@ -3,7 +3,7 @@ import { formatNumber, formatPercent } from '../lib/data';
 
 interface Props {
   value: number | null;
-  as?: 'number' | 'percent' | 'megabytes';
+  as?: 'number' | 'percent' | 'score' | 'megabytes';
 }
 
 const { value, as = 'number' } = Astro.props;
@@ -11,6 +11,7 @@ const { value, as = 'number' } = Astro.props;
 const text = {
   number: () => formatNumber(value),
   percent: () => formatPercent(value),
+  score: () => formatNumber(value, 3),
   megabytes: () => (value === null ? '—' : `${formatNumber(value, 1)} MB`),
 }[as]();
 ---

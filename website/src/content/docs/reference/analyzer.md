@@ -3,25 +3,34 @@ title: Analyzer
 description: API reference for Risan\Sentiment\Analyzer, the configurable, immutable analyzer with withWords(), withoutWords() and withThreshold().
 ---
 
+`final class Analyzer` scores text for one language. You can add words and change the threshold.
+
 ```php
 use Risan\Sentiment\Analyzer;
-```
+use Risan\Sentiment\Language;
 
-`final class Analyzer` scores text for one language. It is **immutable**: every `with*()` method returns a new instance and leaves the original unchanged. An analyzer keeps no state between calls, so one instance can be shared and reused freely.
-
-```php
-$analyzer = new Analyzer();                      // English
-$analyzer = new Analyzer(Language::Indonesian);  // or new Analyzer('id')
-
-$analyzer = $analyzer
+$analyzer = (new Analyzer(Language::Indonesian))
     ->withWords(['cuan' => 2.5, 'bapuk' => -2.0])
-    ->withoutWords(['kill'])
+    ->withoutWords(['kasar'])
     ->withThreshold(0.1);
 
 $result = $analyzer->analyze('Investasinya cuan!');
+
+$result->label;    // Label::Positive
+$result->compound; // 0.5848
 ```
 
+An analyzer is **immutable**. Every `with*()` method returns a new instance and leaves the original unchanged. It keeps no state between calls, so you can share one instance and reuse it.
+
 ## Constructor
+
+Creates an analyzer for one language.
+
+```php
+$english = new Analyzer();
+$indonesian = new Analyzer(Language::Indonesian);
+$strict = new Analyzer('en', threshold: 0.3);
+```
 
 ```php
 public function __construct(
@@ -42,56 +51,38 @@ public function __construct(
 | Exception | When |
 |---|---|
 | `ValueError` | `$language` is a string that is not a known code. |
-| `InvalidArgumentException` | `$threshold` is below `0` or is `1` or higher. |
-
-```php
-$english = new Analyzer();
-$indonesian = new Analyzer(Language::Indonesian);
-$strict = new Analyzer('en', threshold: 0.3);
-```
+| `InvalidArgumentException` | `$threshold` is below `0`, or is `1` or higher. |
 
 ## Methods
 
 ### analyze()
 
-```php
-public function analyze(string $text): Result
-```
-
 Scores a text and returns a [`Result`](/reference/result/).
-
-| Name | Type | Description |
-|---|---|---|
-| `$text` | `string` | The text to analyze. Any length, including empty. |
-
-Empty or whitespace-only text returns all zeros and a neutral label. Invalid UTF-8 never throws: invalid bytes are dropped and the rest is scored.
 
 ```php
 $result = (new Analyzer())->analyze('The food was not good.');
 
 $result->label;    // Label::Negative
-$result->compound; // a negative float
+$result->compound; // -0.3412
 ```
-
-### withWords()
 
 ```php
-public function withWords(array $words): static
+public function analyze(string $text): Result
 ```
 
-Returns a new analyzer with words added to the lexicon or their valences overridden.
+**Parameters**
 
 | Name | Type | Description |
 |---|---|---|
-| `$words` | `array<array-key, float\|int>` | Map of `word => valence`. Valences run from `-4` to `4`. |
+| `$text` | `string` | The text to analyze. Any length, including empty. |
 
-Keys are lower-cased. A numeric key such as `'1337'` works, even though PHP turns it into an int.
+**Returns** a [`Result`](/reference/result/).
 
-**Throws** `InvalidArgumentException` when:
+Empty or whitespace-only text returns all zeros and a neutral label. Invalid UTF-8 never throws. The package drops the invalid bytes and scores the rest.
 
-- a valence is below `-4`, above `4` or not a number;
-- a key is empty;
-- a key contains whitespace, because a word is a single token and such a key could never match.
+### withWords()
+
+Returns a new analyzer with words added to the lexicon, or with their scores replaced.
 
 ```php
 $analyzer = (new Analyzer(Language::Indonesian))
@@ -100,53 +91,84 @@ $analyzer = (new Analyzer(Language::Indonesian))
 $analyzer->withWords(['great' => 9]); // throws InvalidArgumentException
 ```
 
+```php
+public function withWords(array $words): static
+```
+
+**Parameters**
+
+| Name | Type | Description |
+|---|---|---|
+| `$words` | `array<array-key, float\|int>` | Map of `word => valence`. A valence is a score from `-4` to `4`. |
+
+The package lower-cases the keys. A numeric key such as `'1337'` works, even though PHP turns it into an int.
+
+**Returns** a new `Analyzer`.
+
+**Throws** `InvalidArgumentException` when:
+
+- a valence is below `-4`, above `4` or not a number;
+- a key is empty;
+- a key contains whitespace. A word is a single token, so such a key could never match.
+
 See [Customizing the lexicon](/guides/customizing-the-lexicon/).
 
 ### withoutWords()
 
-```php
-public function withoutWords(array $words): static
-```
-
-Returns a new analyzer with the given words removed from the lexicon. They then count as neutral words.
-
-| Name | Type | Description |
-|---|---|---|
-| `$words` | `list<string>` | Words to remove. |
+Returns a new analyzer without the given words. They then count as neutral words.
 
 ```php
 $analyzer = (new Analyzer())->withoutWords(['kill']);
 ```
 
+```php
+public function withoutWords(array $words): static
+```
+
+**Parameters**
+
+| Name | Type | Description |
+|---|---|---|
+| `$words` | `list<string>` | Words to remove. |
+
+**Returns** a new `Analyzer`.
+
 ### withThreshold()
+
+Returns a new analyzer with a different label threshold. The scores do not change. Only the label does.
+
+```php
+// The neutral band is now -0.1 to 0.1.
+$analyzer = (new Analyzer())->withThreshold(0.1);
+```
 
 ```php
 public function withThreshold(float $threshold): static
 ```
 
-Returns a new analyzer with a different label threshold. The scores do not change, only the label.
+**Parameters**
 
 | Name | Type | Description |
 |---|---|---|
 | `$threshold` | `float` | From `0` up to but not including `1`. |
 
+**Returns** a new `Analyzer`.
+
 **Throws** `InvalidArgumentException` when the threshold is outside that range.
 
-```php
-$analyzer = (new Analyzer())->withThreshold(0.1); // neutral band is (-0.1, 0.1)
-```
-
 ### language()
+
+Returns the [`Language`](/reference/language/) of this analyzer. It is always an enum case, even when you passed a string code.
+
+```php
+(new Analyzer('id'))->language(); // Language::Indonesian
+```
 
 ```php
 public function language(): Language
 ```
 
-Returns the [`Language`](/reference/language/) of this analyzer, always as an enum case, even when you passed a string code.
-
-```php
-(new Analyzer('id'))->language(); // Language::Indonesian
-```
+**Returns** a [`Language`](/reference/language/).
 
 ## Immutability
 
@@ -154,5 +176,5 @@ Returns the [`Language`](/reference/language/) of this analyzer, always as an en
 $base = new Analyzer();
 $tuned = $base->withThreshold(0.3);
 
-$base === $tuned; // false: $base is untouched and keeps threshold 0.05
+$base === $tuned; // false: $base keeps its threshold of 0.05
 ```

@@ -6,11 +6,23 @@ description: How fast and light PHP sentiment analysis can be, why OPcache matte
 import Metric from '../../../components/Metric.astro';
 import { metrics } from '../../../lib/data';
 
-The package is built to be cheap to call: one pass over the tokens, constant-time word lookups, and lexicons stored in a form PHP can share between requests.
+The package is cheap to call. Build the analyzer once, then loop over your texts:
+
+```php
+use Risan\Sentiment\Analyzer;
+
+$analyzer = new Analyzer();
+
+foreach ($reviews as $review) {
+    $label = $analyzer->analyze($review)->label;
+}
+```
+
+Each call makes one pass over the words and looks each word up in constant time. The lexicons are stored in a form PHP can share between requests.
 
 ## Benchmarks
 
-Measured with `benchmarks/run.php` from the repository, with OPcache enabled. These are single runs on a laptop (Docker on WSL2), so treat them as a rough guide: repeated runs vary by 10% or more.
+The numbers come from `benchmarks/run.php` in the repository, with OPcache on. They are single runs on a laptop (Docker on WSL2), so treat them as a rough guide. Repeated runs vary by 10% or more.
 
 | Measure | English | Indonesian |
 |---|---|---|
@@ -19,28 +31,29 @@ Measured with `benchmarks/run.php` from the repository, with OPcache enabled. Th
 | Reviews (about 100 words) per second | <Metric value={metrics.benchmark.reviewsPerSecond} /> | <Metric value={metrics.benchmark.indonesianReviewsPerSecond} /> |
 | Long texts (about 2,000 words) per second | <Metric value={metrics.benchmark.longTextsPerSecond} /> | <Metric value={metrics.benchmark.indonesianLongTextsPerSecond} /> |
 
-The peak memory of the whole benchmark process, with both languages loaded, was about <Metric value={metrics.benchmark.peakMemoryMb} as="megabytes" />.
+The peak memory of the whole benchmark process was about <Metric value={metrics.benchmark.peakMemoryMb} as="megabytes" />. Both languages were loaded.
 
-Run the benchmark on your own hardware to see numbers for your setup:
+To see numbers for your own setup, run the benchmark:
 
 ```bash
 php -d opcache.enable_cli=1 benchmarks/run.php
 ```
 
-## Why OPcache matters
+## Turn on OPcache
 
-The lexicons ship as plain PHP files that `return` an array literal. With **OPcache** enabled, PHP compiles such a file once and keeps the array as an immutable structure in shared memory. Every request then reads it with no parsing and no copying.
+The lexicons are plain PHP files that `return` an array. With **OPcache**, PHP compiles such a file once and keeps the array in shared memory. Every request then reads it with no parsing and no copying.
 
-Without OPcache the file is parsed once per process and kept in a static cache, so a long-running worker pays the cost once, and a classic request-per-process setup pays it on every request.
+Without OPcache, PHP parses the file once per process. A long-running worker pays this cost once. A classic request-per-process setup pays it on every request.
 
-OPcache is on by default in most PHP installs, but not for the CLI. In production with PHP-FPM, check that it is active:
+Most PHP installs have OPcache on, but not for the CLI. In production with PHP-FPM, check that it is on:
 
 ```ini
 opcache.enable=1
-opcache.validate_timestamps=0   ; deploy-time cache reset, saves a stat() per file
+; Reset the cache when you deploy. This saves a stat() per file.
+opcache.validate_timestamps=0
 ```
 
-For CLI jobs such as queue workers or imports, enable it explicitly:
+For CLI jobs such as queue workers or imports, turn it on yourself:
 
 ```bash
 php -d opcache.enable_cli=1 artisan queue:work
@@ -48,11 +61,13 @@ php -d opcache.enable_cli=1 artisan queue:work
 
 ## Get the most out of it
 
-- **Reuse the analyzer.** `Sentiment::analyze()` already shares one default analyzer per language, built lazily. If you customize with `withWords()` or `withThreshold()`, build the analyzer once and reuse it.
-- **Loop freely.** Each call is independent and keeps no state between texts, so one process can analyze thousands of texts.
-- **Keep texts short.** The work is linear in the number of tokens. For long documents, [analyze per sentence](/guides/long-text/) for better quality at the same total cost.
-- **Plain ASCII text is the fastest path.** Non-ASCII text (accents, emoji, other scripts) takes extra checks per token.
+- **Reuse the analyzer.** `Sentiment::analyze()` already shares one default analyzer per language. If you customize with `withWords()` or `withThreshold()`, build the analyzer once and reuse it.
+- **Loop freely.** Each call is independent and keeps no state. One process can analyze thousands of texts.
+- **Keep texts short.** The work grows with the number of words. For long documents, [analyze per sentence](/guides/long-text/). The quality is better and the total cost is the same.
+- **Plain ASCII text is the fastest.** Text with accents, emoji or other scripts takes extra checks per word.
 
 ## Memory
 
-Lexicons load once per process and per language. Analyzing a text allocates only its token list, so memory use stays flat however many texts you analyze. Without OPcache, loading a lexicon costs about 1 MB for English and 0.5 MB for Indonesian per process, and the whole benchmark process peaks at about 3 MB. With OPcache the lexicons live in shared memory and the per-process cost is a few KB.
+A lexicon loads once per process and per language. Analyzing a text only allocates its word list, so memory stays flat however many texts you analyze.
+
+Without OPcache, loading a lexicon costs about 1 MB for English and 0.5 MB for Indonesian per process. The whole benchmark process peaks at about 3 MB. With OPcache, the lexicons live in shared memory and the cost per process is a few KB.

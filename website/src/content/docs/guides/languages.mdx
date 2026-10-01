@@ -7,92 +7,104 @@ import Metric from '../../../components/Metric.astro';
 import ResultsTable from '../../../components/ResultsTable.astro';
 import { metrics } from '../../../lib/data';
 
-The package supports two languages, selected with the [`Language`](/reference/language/) enum or its string code:
-
-| Language | Enum case | Code |
-|---|---|---|
-| English | `Language::English` | `'en'` |
-| Indonesian | `Language::Indonesian` | `'id'` |
-
-English is the default everywhere.
+The package scores English and Indonesian. English is the default.
 
 ```php
 use Risan\Sentiment\Analyzer;
 use Risan\Sentiment\Language;
 use Risan\Sentiment\Sentiment;
 
-Sentiment::analyze('This is great!');                          // English
-Sentiment::analyze('Ini keren banget!', Language::Indonesian);  // Indonesian
-Sentiment::analyze('Ini keren banget!', 'id');                  // same, by code
+// English
+Sentiment::analyze('This is great!');
+
+// Indonesian, by enum case or by code
+Sentiment::analyze('Ini keren banget!', Language::Indonesian);
+Sentiment::analyze('Ini keren banget!', 'id');
 
 $analyzer = new Analyzer('id');
 $analyzer->language(); // Language::Indonesian
 ```
 
+Pick the language with the [`Language`](/reference/language/) enum or its string code:
+
+| Language | Enum case | Code |
+|---|---|---|
+| English | `Language::English` | `'en'` |
+| Indonesian | `Language::Indonesian` | `'id'` |
+
 An unknown code throws a native `ValueError`:
 
 ```php
-Sentiment::analyze('Hello', 'fr'); // ValueError
+Sentiment::analyze('Hello', 'fr'); // throws ValueError
 ```
 
-Language is never guessed. If your input mixes languages, pick the one that dominates, or analyze each part with its own analyzer.
+The package never guesses the language. If a text mixes languages, pick the main one. Or split the text and analyze each part with its own language.
 
 ## English
 
-English uses the original **VADER** lexicon (about 7,500 words, emoticons and slang, each rated by ten human judges) and the full VADER rule set. Scores are checked against the reference implementation (`vaderSentiment` 3.3.2) on a large corpus of test sentences, so you get the same numbers as the Python original, with two small intentional differences:
+English uses the original **VADER** lexicon and the full VADER rules. The lexicon has about 7,500 words, emoticons and slang. Ten human judges rated each entry.
 
-- The "but" rule scales each clause by position, fixing a quirk in the reference where repeated equal valences are scaled wrongly.
-- The emoji variation selector (U+FE0F) is ignored, so `❤️` scores like `❤`.
+The package checks its scores against the reference implementation (`vaderSentiment` 3.3.2) on a large set of test sentences. You get the same numbers as the Python original, with two small differences on purpose:
 
-VADER was designed for social media text and works well on reviews, comments and short messages.
+- The "but" rule scales each part by position. The reference scales repeated equal scores wrongly.
+- The package ignores the emoji variation selector (U+FE0F), so `❤️` scores like `❤`.
+
+VADER was made for social media text. It also works well on reviews, comments and short messages.
 
 ## Indonesian
 
-Indonesian runs on the same engine with its own data:
-
-- A **lexicon** of Indonesian words and their valences, including common affixed forms (`bahagia`, `membahagiakan`, `kekecewaan`) and informal spellings (`mantap`, `mantul`, `keren`, `zonk`).
-- **Negations**: `tidak`, `tak`, `bukan`, `belum`, `jangan`, `tanpa`, `kurang`, and informal forms such as `gak`, `nggak`, `enggak`, `ga`, `tdk`.
-- **Intensifiers before the word** (`sangat bagus`, `terlalu mahal`) **and after it** (`bagus banget`, `bagus sekali`, `keren parah`), plus dampeners (`agak`, `cukup`, `kurang lebih`).
-- **Contrast words**: `tapi`, `tetapi`, `tp`, `namun`, `sayangnya`.
-- **Suffixes and repetition**: `-nya`, `-lah`, `-kah` and `-pun` are stripped when the bare word is known, and a repeated word such as `bagus-bagus` or `bagus2` is looked up as `bagus`.
-- Emoticons and emoji, shared with English.
+Indonesian runs on the same engine with its own data. Here are two examples:
 
 ```php
 use Risan\Sentiment\Language;
 use Risan\Sentiment\Sentiment;
 
-Sentiment::analyze('Pelayanannya lambat dan mengecewakan.', Language::Indonesian)->label;
-// Label::Negative
+$result = Sentiment::analyze('Filmnya bagus banget!', 'id');
 
-Sentiment::analyze('Bagus banget!', Language::Indonesian)->compound
-    > Sentiment::analyze('Bagus!', Language::Indonesian)->compound;
-// true
+$result->label;    // Label::Positive
+$result->compound; // 0.623
+
+$result = Sentiment::analyze('Pelayanannya lambat.', 'id');
+
+$result->label;    // Label::Negative
+$result->compound; // -0.4588
 ```
 
-The Indonesian lexicon was written for this project and is released under the MIT license. No existing Indonesian sentiment list was copied, because the well-known ones carry no open license. See [Credits & license](/credits/).
+What the Indonesian data covers:
+
+- **A lexicon** of Indonesian words with scores. It includes common affixed forms (`bahagia`, `membahagiakan`, `kekecewaan`) and informal spellings (`mantap`, `mantul`, `keren`, `zonk`).
+- **Negations**: `tidak`, `tak`, `bukan`, `belum`, `jangan`, `tanpa`, `kurang`, and informal forms such as `gak`, `nggak`, `enggak`, `ga`, `tdk`.
+- **Intensifiers before the word** (`sangat bagus`, `terlalu mahal`) and **after it** (`bagus banget`, `bagus sekali`, `keren parah`). Dampeners (`agak`, `cukup`, `kurang lebih`) work the same way.
+- **Contrast words**: `tapi`, `tetapi`, `tp`, `namun`, `sayangnya`.
+- **Suffixes and repeats**: the package strips `-nya`, `-lah`, `-kah` and `-pun` when the bare word is known. It looks up a repeated word such as `bagus-bagus` or `bagus2` as `bagus`.
+- **Emoticons and emoji**, shared with English.
+
+The Indonesian lexicon was written for this project and has the MIT license. No existing Indonesian sentiment list was copied, because the well-known ones have no open license. See [Credits & license](/credits/).
 
 ### Measured accuracy
 
-Accuracy was measured on the test split of **IndoNLU SmSA**, a public Indonesian sentiment benchmark with three classes (positive, neutral, negative). Labels come from `compound` with the default threshold.
+The test split of **IndoNLU SmSA** measured the accuracy. It is a public Indonesian sentiment benchmark with three classes: positive, neutral and negative. The labels come from `compound` with the default threshold.
 
 | Measure | Result |
 |---|---|
 | Accuracy | <Metric value={metrics.indonesian.accuracy} as="percent" /> |
-| Macro F1 | <Metric value={metrics.indonesian.macroF1} as="percent" /> |
+| Macro F1 (from 0 to 1) | <Metric value={metrics.indonesian.macroF1} as="score" /> |
 | Majority-class baseline accuracy | <Metric value={metrics.indonesian.majorityBaselineAccuracy} as="percent" /> |
 | Words written for the lexicon | <Metric value={metrics.indonesian.lexiconEntries} /> |
 
 {metrics.indonesian.accuracy === null && <p><em>The evaluation has not been published yet.</em></p>}
 
-A lexicon method does not match a fine-tuned neural model, and these numbers are published so you can judge for yourself. Compare the accuracy with the baseline, which is what you would get by always guessing the most common class.
+The baseline is the accuracy you get by always guessing the most common class. Compare it with the accuracy of the package.
+
+A lexicon method does not match a fine-tuned neural model. The package publishes these numbers so you can judge for yourself.
 
 ### Known limits
 
 - **Sarcasm and irony** are read at face value.
-- **Regional languages** (Javanese, Sundanese and others) and heavy code-mixing are only partly covered. The Indonesian lexicon includes the English words that are common in Indonesian reviews (`good`, `best`, `worst`), but it does not fall back to the whole English lexicon: on the SmSA validation split that fallback did not improve the macro F1, because many English words are also ordinary Indonesian words (`sore`, `alas`, `no`).
-- **Domain vocabulary** such as product names, medical or legal terms is missing unless you [add it](/guides/customizing-the-lexicon/).
-- **Words are not stemmed.** Affixed forms must be in the lexicon to be recognized, so rare inflections can be missed.
-- **Ambiguous words** are scored conservatively or left out. For example, `parah` ("severe") is negative on its own, but acts as an intensifier after another sentiment word, as in `keren parah`.
+- **Regional languages** (Javanese, Sundanese and others) and heavy code-mixing are only partly covered. The Indonesian lexicon includes English words that are common in Indonesian reviews (`good`, `best`, `worst`). It does not fall back to the whole English lexicon. On the SmSA validation split, that fallback did not improve the macro F1, because many English words are also ordinary Indonesian words (`sore`, `alas`, `no`).
+- **Words from your field**, such as product names or medical and legal terms, are missing unless you [add them](/guides/customizing-the-lexicon/).
+- **Words are not stemmed.** An affixed form must be in the lexicon to be found, so rare forms can be missed.
+- **Ambiguous words** get a careful score or are left out. For example, `parah` ("severe") is negative on its own. After another sentiment word it is an intensifier, as in `keren parah`.
 
 ## Examples
 
