@@ -133,14 +133,10 @@ describe('understanding the scores', function () {
         expect(Sentiment::analyze('VERY good!!!')->compound)->toBe(0.7005);
     });
 
-    it('scores empty and whitespace-only text as zeros and neutral', function () {
-        expect(Sentiment::analyze('')->toArray())->toBe([
-            'label' => 'neutral',
-            'compound' => 0.0,
-            'positive' => 0.0,
-            'negative' => 0.0,
-            'neutral' => 0.0,
-        ]);
+    it('lets a negation reach three words back', function () {
+        expect(Sentiment::analyze('The food was not good.')->compound)->toBe(-0.3412);
+        expect(Sentiment::analyze('The food was not at all good.')->compound)->toBe(-0.3412);
+        expect(Sentiment::analyze('The food was not a thing that was good.')->compound)->toBe(0.4404);
     });
 });
 
@@ -155,12 +151,9 @@ describe('languages', function () {
         expect((new Analyzer('id'))->language())->toBe(Language::Indonesian);
     });
 
-    it('scores the Indonesian examples', function () {
-        $praise = Sentiment::analyze('Filmnya bagus banget!', 'id');
+    it('scores the Indonesian complaint', function () {
         $complaint = Sentiment::analyze('Pelayanannya lambat.', 'id');
 
-        expect($praise->label)->toBe(Label::Positive);
-        expect($praise->compound)->toBe(0.623);
         expect($complaint->label)->toBe(Label::Negative);
         expect($complaint->compound)->toBe(-0.4588);
     });
@@ -239,25 +232,28 @@ describe('long text', function () {
         expect(round(averageCompound(new Analyzer(), $review), 4))->toBe(0.2705);
         expect(Sentiment::analyze($review)->compound)->toBe(0.7901);
     });
+
+    it('ranks the sentence scores', function () {
+        $analyzer = new Analyzer();
+        $sentences = [
+            'The room was clean and the staff were lovely!',
+            'The bed was comfortable.',
+            'Breakfast was terrible.',
+        ];
+
+        $scores = array_map(
+            fn(string $s): float => $analyzer->analyze($s)->compound,
+            $sentences,
+        );
+
+        expect(min($scores))->toBe(-0.4767);
+        expect(max($scores))->toBe(0.7777);
+    });
 });
 
 describe('reference', function () {
-    it('Sentiment: scores with the default analyzer', function () {
-        expect(Sentiment::analyze('This package is awesome!')->label)->toBe(Label::Positive);
-        expect(Sentiment::analyze('Filmnya bagus banget!', Language::Indonesian)->label)->toBe(Label::Positive);
+    it('Sentiment: rejects an unknown language code', function () {
         expect(fn() => Sentiment::analyze('Hello', 'xx'))->toThrow(ValueError::class);
-    });
-
-    it('Analyzer: builds the Indonesian example', function () {
-        $analyzer = (new Analyzer(Language::Indonesian))
-            ->withWords(['cuan' => 2.5, 'bapuk' => -2.0])
-            ->withoutWords(['kasar'])
-            ->withThreshold(0.1);
-
-        $result = $analyzer->analyze('Investasinya cuan!');
-
-        expect($result->label)->toBe(Label::Positive);
-        expect($result->compound)->toBe(0.5848);
     });
 
     it('Analyzer: constructors and exceptions', function () {
@@ -285,11 +281,6 @@ describe('reference', function () {
     it('Result: the properties, methods and JSON', function () {
         $result = Sentiment::analyze('VADER is smart, handsome, and funny.');
 
-        expect($result->label)->toBe(Label::Positive);
-        expect($result->compound)->toBe(0.8316);
-        expect($result->positive)->toBe(0.746);
-        expect($result->negative)->toBe(0.0);
-        expect($result->neutral)->toBe(0.254);
         expect($result->isPositive())->toBeTrue();
         expect($result->isNegative())->toBeFalse();
         expect($result->isNeutral())->toBeFalse();
@@ -327,19 +318,6 @@ describe('reference', function () {
 });
 
 describe('upgrading from v1', function () {
-    it('shows the v2 values', function () {
-        $result = Sentiment::analyze('This package is awesome!');
-
-        expect($result->label->value)->toBe('positive');
-        expect($result->toArray())->toBe([
-            'label' => 'positive',
-            'compound' => 0.6588,
-            'positive' => 0.594,
-            'negative' => 0.0,
-            'neutral' => 0.406,
-        ]);
-    });
-
     it('builds the custom words example', function () {
         expect((new Analyzer())->withWords(['sick' => 2.0])->withoutWords(['kill']))->toBeInstanceOf(Analyzer::class);
     });

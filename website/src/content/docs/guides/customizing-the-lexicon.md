@@ -53,6 +53,8 @@ Compare with words the lexicon already knows. If `good` is about 1.9 and `great`
 `withoutWords()` takes a list of words to drop. They then count as plain neutral words.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $text = 'We will kill it at the launch.';
 
 (new Analyzer())->analyze($text)->label;
@@ -69,6 +71,8 @@ $analyzer->analyze($text)->label;
 A key must be one word. It cannot be empty and it cannot contain whitespace. The score must be a number from -4 to 4. Otherwise the package throws an `InvalidArgumentException` at once, with a message that says what is wrong.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 (new Analyzer())->withWords(['very good' => 3.0]);
 // InvalidArgumentException (whitespace)
 
@@ -83,6 +87,8 @@ Phrases with more than one word are not supported. Add the words one by one.
 Every `with*()` call returns a **new** analyzer. The original stays the same. You can derive several analyzers from one base and share them across your application.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $base = new Analyzer();
 $gaming = $base->withWords(['sick' => 2.0]);
 

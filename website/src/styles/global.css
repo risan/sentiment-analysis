@@ -160,20 +160,17 @@ body * {
   line-height: 1.45;
 }
 
-/* A block table scrolls sideways but shrinks to its content, so only phones get it. */
-@media (max-width: 639.98px) {
-  .docs table {
-    display: block;
-    overflow-x: auto;
-  }
-}
-
 .docs :where(th, td) {
   padding: 0.35rem 0.75rem 0.35rem 0;
   vertical-align: top;
 }
 
+.docs td {
+  overflow-wrap: anywhere;
+}
+
 .docs :where(th) {
+  overflow-wrap: break-word;
   font-weight: 600;
   color: var(--color-stone-900);
 }

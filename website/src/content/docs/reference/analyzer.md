@@ -27,6 +27,9 @@ An analyzer is **immutable**. Every `with*()` method returns a new instance and 
 Creates an analyzer for one language.
 
 ```php
+use Risan\Sentiment\Analyzer;
+use Risan\Sentiment\Language;
+
 $english = new Analyzer();
 $indonesian = new Analyzer(Language::Indonesian);
 $strict = new Analyzer('en', threshold: 0.3);
@@ -60,6 +63,8 @@ public function __construct(
 Scores a text and returns a [`Result`](/reference/result/).
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $result = (new Analyzer())->analyze('The food was not good.');
 
 $result->label;    // Label::Negative
@@ -85,6 +90,9 @@ Empty or whitespace-only text returns all zeros and a neutral label. Invalid UTF
 Returns a new analyzer with words added to the lexicon, or with their scores replaced.
 
 ```php
+use Risan\Sentiment\Analyzer;
+use Risan\Sentiment\Language;
+
 $analyzer = (new Analyzer(Language::Indonesian))
     ->withWords(['cuan' => 2.5, 'bapuk' => -2.0]);
 
@@ -118,6 +126,8 @@ See [Customizing the lexicon](/guides/customizing-the-lexicon/).
 Returns a new analyzer without the given words. They then count as neutral words.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $analyzer = (new Analyzer())->withoutWords(['kill']);
 ```
 
@@ -138,6 +148,8 @@ public function withoutWords(array $words): static
 Returns a new analyzer with a different label threshold. The scores do not change. Only the label does.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 // The neutral band is now -0.1 to 0.1.
 $analyzer = (new Analyzer())->withThreshold(0.1);
 ```
@@ -161,6 +173,8 @@ public function withThreshold(float $threshold): static
 Returns the [`Language`](/reference/language/) of this analyzer. It is always an enum case, even when you passed a string code.
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 (new Analyzer('id'))->language(); // Language::Indonesian
 ```
 
@@ -173,6 +187,8 @@ public function language(): Language
 ## Immutability
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $base = new Analyzer();
 $tuned = $base->withThreshold(0.3);
 

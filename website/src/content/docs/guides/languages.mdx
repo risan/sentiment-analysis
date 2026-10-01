@@ -35,6 +35,8 @@ Pick the language with the [`Language`](/reference/language/) enum or its string
 An unknown code throws a native `ValueError`:
 
 ```php
+use Risan\Sentiment\Sentiment;
+
 Sentiment::analyze('Hello', 'fr'); // throws ValueError
 ```
 

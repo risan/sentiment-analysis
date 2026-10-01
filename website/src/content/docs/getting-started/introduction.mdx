@@ -37,6 +37,8 @@ The package runs in plain PHP. It makes no API calls, needs no training data and
 The package reads the surface of the text. It does not understand sarcasm, and it does not know words from your own field.
 
 ```php
+use Risan\Sentiment\Sentiment;
+
 Sentiment::analyze('Oh great, another delay.')->label;
 // Label::Positive (a person would say negative)
 ```

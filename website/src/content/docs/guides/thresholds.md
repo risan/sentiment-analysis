@@ -38,6 +38,8 @@ With the default threshold of `0.05`, the **neutral band** runs from -0.05 to +0
 Pass it to the constructor, or use `withThreshold()`:
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 $analyzer = new Analyzer(threshold: 0.1);
 
 $strict = $analyzer->withThreshold(0.4);
@@ -56,6 +58,8 @@ A wider neutral band means fewer positive and negative labels. Use it when a wro
 The threshold must be at least `0` and below `1`. Anything else throws an `InvalidArgumentException`:
 
 ```php
+use Risan\Sentiment\Analyzer;
+
 (new Analyzer())->withThreshold(1.0);  // InvalidArgumentException
 (new Analyzer())->withThreshold(-0.1); // InvalidArgumentException
 ```
@@ -67,7 +71,10 @@ A text with a compound of exactly `0` is always neutral, even at threshold `0`.
 If you have your own cutoffs, ignore the label and use the numbers:
 
 ```php
-$result = $analyzer->analyze($text);
+use Risan\Sentiment\Analyzer;
+
+$analyzer = new Analyzer();
+$result = $analyzer->analyze('The movie was good.');
 
 if ($result->compound >= 0.6) {
     // very happy

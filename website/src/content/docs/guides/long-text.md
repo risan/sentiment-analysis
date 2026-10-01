@@ -43,6 +43,11 @@ The average is a float from -1 to 1. You can compare it with the same [threshold
 On a long text, the compound score drifts toward -1 or +1 as more words pile up. A few strong words can make a long review look more extreme than it is.
 
 ```php
+use Risan\Sentiment\Sentiment;
+
+$review = 'The room was clean and the staff were lovely! '
+    . 'The bed was comfortable. Breakfast was terrible.';
+
 Sentiment::analyze($review)->compound; // 0.7901
 ```
 
@@ -59,13 +64,22 @@ Per-sentence scoring also helps in these ways:
 A plain average treats `Thanks.` and a detailed complaint the same. If that matters, weight by length, drop very short sentences, or pick the most extreme sentences:
 
 ```php
+use Risan\Sentiment\Analyzer;
+
+$analyzer = new Analyzer();
+$sentences = [
+    'The room was clean and the staff were lovely!',
+    'The bed was comfortable.',
+    'Breakfast was terrible.',
+];
+
 $scores = array_map(
     fn (string $s): float => $analyzer->analyze($s)->compound,
     $sentences,
 );
 
-$worst = min($scores);
-$best = max($scores);
+$worst = min($scores); // -0.4767
+$best = max($scores);  // 0.7777
 ```
 
 ## Splitting sentences

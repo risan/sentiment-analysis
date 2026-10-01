@@ -107,7 +107,7 @@ $analyzer = (new Analyzer())
 Scores are **not comparable** across versions. The numbers mean something else, so do not carry over stored scores or tuned cut-offs.
 </Note>
 
-- **Scores are no longer probabilities.** In v1, the three scores added up to 1 and the category was the largest one. In v2, `positive`, `negative` and `neutral` are shares of the text. The label comes from the `compound` score and a [threshold](/guides/thresholds/).
+- **Scores are no longer probabilities.** In v1, the three scores added up to 1 and the category was the largest one. In v2, `positive`, `negative` and `neutral` are shares of the weighted sentiment signal. The label comes from the `compound` score and a [threshold](/guides/thresholds/).
 - **Neutral is a real result.** v2 calls a text neutral when its compound score is close to zero. Empty text and text with no known word are neutral.
 - **Context matters.** `not good`, `very good`, `GOOD!!!` and `good, but…` get different scores. v1 mostly counted words. See [Understanding the scores](/guides/understanding-scores/).
 - **Text handling is stricter and safer.** Invalid UTF-8 never throws. Results do not depend on the `mb_internal_encoding()` of the host.

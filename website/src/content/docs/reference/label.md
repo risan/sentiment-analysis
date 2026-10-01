@@ -45,6 +45,8 @@ With the default threshold of `0.05`, a compound of `0.05` is positive and `0.04
 `Label` is a backed enum, so it has the native methods:
 
 ```php
+use Risan\Sentiment\Label;
+
 Label::from('negative'); // Label::Negative
 Label::tryFrom('mixed'); // null
 Label::cases();          // [Positive, Negative, Neutral]

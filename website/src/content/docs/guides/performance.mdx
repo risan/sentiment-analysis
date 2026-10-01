@@ -11,6 +11,8 @@ The package is cheap to call. Build the analyzer once, then loop over your texts
 ```php
 use Risan\Sentiment\Analyzer;
 
+$reviews = ['Great phone!', 'The battery is terrible.'];
+
 $analyzer = new Analyzer();
 
 foreach ($reviews as $review) {
@@ -22,16 +24,18 @@ Each call makes one pass over the words and looks each word up in constant time.
 
 ## Benchmarks
 
-The numbers come from `benchmarks/run.php` in the repository, with OPcache on. They are single runs on a laptop (Docker on WSL2), so treat them as a rough guide. Repeated runs vary by 10% or more.
+The numbers come from `benchmarks/run.php` in the repository, on PHP {metrics.benchmark.phpVersion ?? '—'} (CLI, Docker on a Windows laptop with WSL2). They are single runs, so treat them as a rough guide. Repeated runs vary by 10% or more.
 
-| Measure | English | Indonesian |
-|---|---|---|
-| PHP version | {metrics.benchmark.phpVersion ?? '—'} | {metrics.benchmark.phpVersion ?? '—'} |
-| Short texts (a tweet) per second | <Metric value={metrics.benchmark.shortTextsPerSecond} /> | <Metric value={metrics.benchmark.indonesianShortTextsPerSecond} /> |
-| Reviews (about 100 words) per second | <Metric value={metrics.benchmark.reviewsPerSecond} /> | <Metric value={metrics.benchmark.indonesianReviewsPerSecond} /> |
-| Long texts (about 2,000 words) per second | <Metric value={metrics.benchmark.longTextsPerSecond} /> | <Metric value={metrics.benchmark.indonesianLongTextsPerSecond} /> |
+| Text | Words | Analyses per second, OPcache on | Analyses per second, OPcache off |
+|---|---|---|---|
+| Tweet, English | 17 | about <Metric value={metrics.benchmark.shortTextsPerSecond} /> | about 66,000 |
+| Review, English | 106 | about <Metric value={metrics.benchmark.reviewsPerSecond} /> | about 12,000 |
+| Long text, English | 2,120 | about <Metric value={metrics.benchmark.longTextsPerSecond} /> | about 650 |
+| Tweet, Indonesian | 10 | about <Metric value={metrics.benchmark.indonesianShortTextsPerSecond} /> | about 57,000 |
+| Review, Indonesian | 93 | about <Metric value={metrics.benchmark.indonesianReviewsPerSecond} /> | about 12,000 |
+| Long text, Indonesian | 1,860 | about <Metric value={metrics.benchmark.indonesianLongTextsPerSecond} /> | about 670 |
 
-The peak memory of the whole benchmark process was about <Metric value={metrics.benchmark.peakMemoryMb} as="megabytes" />. Both languages were loaded.
+The peak memory of the whole benchmark process was about <Metric value={metrics.benchmark.peakMemoryMb} as="megabytes" /> with OPcache on and about 3 MB with it off. Both languages were loaded.
 
 To see numbers for your own setup, run the benchmark:
 

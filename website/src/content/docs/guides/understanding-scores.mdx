@@ -8,6 +8,8 @@ import ResultsTable from '../../../components/ResultsTable.astro';
 This page explains the numbers in a [`Result`](/reference/result/) and what changes them.
 
 ```php
+use Risan\Sentiment\Sentiment;
+
 $result = Sentiment::analyze('VADER is smart, handsome, and funny.');
 
 $result->compound; // 0.8316
@@ -33,9 +35,9 @@ Because of the last step, a compound of `0.5` does not mean "50% positive". Read
 
 ## Positive, neutral and negative
 
-These three numbers are **shares** between 0 and 1, with three decimals. They add up to about 1.
+These three numbers are **shares** of the weighted sentiment signal. Each is between 0 and 1, with three decimals. They add up to about 1.
 
-In the example, 74.6% of the text is positive and none is negative. The other 25.4% is neutral: words with no sentiment, such as `VADER` and `is`.
+In the example, 74.6% of the weighted sentiment signal is positive and none is negative. The other 25.4% is neutral. Words with no sentiment, such as `VADER` and `is`, count toward the neutral share. Strong words weigh more than mild words.
 
 They are not probabilities. A text with many neutral words and one mild positive word has a high `neutral` and still a positive `compound`. To decide, use `compound` or the label. Use the three shares to see how a text is built.
 
@@ -56,6 +58,8 @@ The default threshold is `0.05`. The VADER authors recommend this value.
 The package does more than add up word scores. Here is how emphasis changes the compound score of the same word:
 
 ```php
+use Risan\Sentiment\Sentiment;
+
 Sentiment::analyze('not good')->compound;     // -0.3412
 Sentiment::analyze('good')->compound;         // 0.4404
 Sentiment::analyze('very good')->compound;    // 0.4927
@@ -76,6 +80,25 @@ These are the rules:
 | Emoticons and emoji | `:)`, `❤️`, `😠` | Count as sentiment words |
 
 Indonesian has the same rules. It adds intensifiers that come after the word (`bagus banget`), contrast words such as `tapi` and `namun`, and informal negations such as `gak`. See [Languages](/guides/languages/).
+
+### Negation reaches three words back
+
+A negation flips a sentiment word when it comes up to three words before it:
+
+```php
+use Risan\Sentiment\Sentiment;
+
+Sentiment::analyze('The food was not good.')->compound;
+// -0.3412
+
+Sentiment::analyze('The food was not at all good.')->compound;
+// -0.3412
+
+Sentiment::analyze('The food was not a thing that was good.')->compound;
+// 0.4404
+```
+
+In the last text, `not` is five words away from `good`. It is too far to count, so `good` keeps its positive score.
 
 ## Examples
 

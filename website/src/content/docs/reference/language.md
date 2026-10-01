@@ -32,6 +32,8 @@ Sentiment::analyze('Filmnya bagus banget!', 'id');
 `Language` is a backed enum, so it has the native methods:
 
 ```php
+use Risan\Sentiment\Language;
+
 Language::from('id');     // Language::Indonesian
 Language::tryFrom('fr');  // null
 Language::English->value; // 'en'
@@ -41,6 +43,9 @@ Language::cases();        // [English, Indonesian]
 An unknown code throws PHP's native `ValueError`. This is true for `Language::from()`, `Sentiment::analyze()` and `new Analyzer()`:
 
 ```php
+use Risan\Sentiment\Language;
+use Risan\Sentiment\Sentiment;
+
 Language::from('fr');                // throws ValueError
 Sentiment::analyze('Bonjour', 'fr'); // throws ValueError
 ```

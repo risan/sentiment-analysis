@@ -2,17 +2,6 @@
 
 Scores English and Indonesian text as positive, negative or neutral. Pure PHP 8.3+, no API calls, no dependencies.
 
-```php
-use Risan\Sentiment\Sentiment;
-
-$result = Sentiment::analyze(
-    'This package is awesome!',
-);
-
-$result->label;    // Label::Positive
-$result->compound; // 0.6588
-```
-
 Documentation and live examples: <https://sentiment-analysis.risanb.com>
 
 ## Install
