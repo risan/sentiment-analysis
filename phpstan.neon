@@ -1,0 +1,9 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - tools
+        - benchmarks
+    excludePaths:
+        - tools/vader-reference
+        - tools/data
