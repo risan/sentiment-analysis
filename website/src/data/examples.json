@@ -129,10 +129,10 @@
         "text": "Makanannya enak sekali.",
         "language": "id",
         "label": "positive",
-        "compound": 0.5095,
-        "positive": 0.622,
+        "compound": 0.5849,
+        "positive": 0.655,
         "negative": 0.0,
-        "neutral": 0.378
+        "neutral": 0.345
     },
     {
         "text": "Pelayanannya tidak ramah.",
@@ -146,29 +146,29 @@
     {
         "text": "Tempatnya nyaman tapi harganya mahal.",
         "language": "id",
-        "label": "positive",
-        "compound": 0.25,
-        "positive": 0.333,
-        "negative": 0.0,
-        "neutral": 0.667
+        "label": "negative",
+        "compound": -0.128,
+        "positive": 0.267,
+        "negative": 0.333,
+        "neutral": 0.4
     },
     {
         "text": "Aku BENCI antrean panjang!!!",
         "language": "id",
         "label": "negative",
-        "compound": -0.7656,
+        "compound": -0.6817,
         "positive": 0.0,
-        "negative": 0.652,
-        "neutral": 0.348
+        "negative": 0.606,
+        "neutral": 0.394
     },
     {
         "text": "Hotelnya lumayan, tapi kamarnya kotor.",
         "language": "id",
         "label": "negative",
-        "compound": -0.5423,
-        "positive": 0.176,
-        "negative": 0.471,
-        "neutral": 0.353
+        "compound": -0.6428,
+        "positive": 0.162,
+        "negative": 0.514,
+        "neutral": 0.324
     },
     {
         "text": "Kamera hp ini keren parah 😍",

@@ -77,6 +77,27 @@ describe('English lexicon', function () {
     });
 });
 
+describe('Indonesian lexicon', function () {
+    beforeEach(function () {
+        $this->lexicon = require dirname(__DIR__, 2) . '/resources/id/lexicon.php';
+    });
+
+    it('has at least 2,500 words, all scored within VADER\'s range and none neutral', function () {
+        expect(count($this->lexicon))->toBeGreaterThanOrEqual(2500);
+
+        foreach ($this->lexicon as $word => $valence) {
+            expect($valence)->not->toBe(0.0, (string) $word);
+            expect(abs($valence))->toBeLessThanOrEqual(4.0, (string) $word);
+        }
+    });
+
+    it('keeps the emoji description words and emoticons that VADER scores, minus the collisions', function () {
+        expect($this->lexicon)->toHaveKey('heart');
+        expect($this->lexicon)->toHaveKey(':)');
+        expect($this->lexicon)->not->toHaveKey('no');
+    });
+});
+
 describe('English emoji map', function () {
     it('keeps only single code point emoji, the only ones the reference can match', function () {
         $emoji = require dirname(__DIR__, 2) . '/resources/en/emoji.php';

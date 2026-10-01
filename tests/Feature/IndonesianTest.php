@@ -218,3 +218,56 @@ describe('emphasis', function () {
         expect(indonesianCompound('BAGUS film'))->toBeGreaterThan(indonesianCompound('bagus film'));
     });
 });
+
+function shippedCompound(string $text): float
+{
+    return Sentiment::analyze($text, Language::Indonesian)->compound;
+}
+
+describe('the shipped lexicon on everyday sentences', function () {
+    it('labels the sentence', function (string $text, Label $expected) {
+        expect(Sentiment::analyze($text, Language::Indonesian)->label)->toBe($expected);
+    })->with([
+        'food and service' => ['Makanannya enak sekali dan pelayanannya ramah.', Label::Positive],
+        'place and price' => ['Tempatnya nyaman, bersih, dan harganya murah.', Label::Positive],
+        'happy with a gift' => ['Aku senang banget sama hadiah ini!', Label::Positive],
+        'scenery' => ['Pemandangannya indah dan udaranya sejuk.', Label::Positive],
+        'online shop' => ['Barang sampai dengan cepat, sesuai deskripsi, penjual ramah.', Label::Positive],
+        'bank' => ['Pelayanan bank ini cepat dan stafnya sopan.', Label::Positive],
+        'bad service' => ['Pelayanannya buruk dan makanannya tidak enak.', Label::Negative],
+        'late order' => ['Aku kecewa, pesanannya datang terlambat.', Label::Negative],
+        'dirty room' => ['Kamarnya kotor dan bau.', Label::Negative],
+        'slow app' => ['Aplikasinya lemot dan sering error.', Label::Negative],
+        'contrast, the second clause wins' => ['Hotelnya lumayan, tapi kamarnya kotor.', Label::Negative],
+        'plain facts' => ['Besok rapat jam 3 sore di kantor.', Label::Neutral],
+        'opening hours' => ['Restoran ini buka dari pagi sampai malam.', Label::Neutral],
+    ]);
+
+    it('does not score ordinary words that only look like sentiment words', function (string $text) {
+        expect(Sentiment::analyze($text, Language::Indonesian)->isNeutral())->toBeTrue();
+    })->with([
+        '"salah satu" means "one of"' => 'salah satu menu di sini',
+        'babi is pork' => 'menu babi panggang',
+        'kaya is "like"' => 'kaya gini sih',
+    ]);
+});
+
+describe('parah and lumayan in the shipped lexicon', function () {
+    it('reads parah as negative on its own and as a booster after a sentiment word', function () {
+        expect(shippedCompound('Filmnya parah'))->toBeLessThan(0.0);
+        expect(shippedCompound('keren parah'))->toBeGreaterThan(shippedCompound('keren'));
+        expect(shippedCompound('keren parah'))->toBe(shippedCompound('keren banget'));
+    });
+
+    it('reads lumayan as mildly positive on its own and as a dampener before a sentiment word', function () {
+        expect(shippedCompound('lumayan'))->toBeGreaterThan(0.0);
+        expect(shippedCompound('lumayan'))->toBeLessThan(shippedCompound('bagus'));
+        expect(shippedCompound('lumayan bagus'))->toBeLessThan(shippedCompound('bagus'));
+        expect(shippedCompound('lumayan bagus'))->toBeGreaterThan(0.0);
+    });
+
+    it('lets lumayan dampen parah when they meet', function () {
+        expect(shippedCompound('lumayan parah'))->toBeLessThan(0.0);
+        expect(shippedCompound('lumayan parah'))->toBeGreaterThan(shippedCompound('parah'));
+    });
+});
