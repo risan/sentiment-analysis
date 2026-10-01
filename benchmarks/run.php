@@ -70,11 +70,14 @@ function wordCount(string $text): int
  */
 function measure(Analyzer $analyzer, string $text, float $seconds): array
 {
+    global $processPeak;
+
     for ($warmUp = 0; $warmUp < 20; $warmUp++) {
         $analyzer->analyze($text);
     }
 
     $memoryBefore = memory_get_usage();
+    $processPeak = max($processPeak, memory_get_peak_usage());
     memory_reset_peak_usage();
 
     $iterations = 0;
@@ -97,6 +100,7 @@ function measure(Analyzer $analyzer, string $text, float $seconds): array
     ];
 }
 
+$processPeak = 0;
 $seconds = parseSeconds();
 $opcache = function_exists('opcache_get_status') && (ini_get('opcache.enable_cli') === '1');
 
@@ -134,4 +138,6 @@ foreach (SAMPLES as $code => $samples) {
     printf("          first use of '%s' (load rules): %.2f ms, %.0f KB\n\n", $code, $loadMilliseconds, $loadKilobytes);
 }
 
-printf("Whole process peak memory: %.2f MB\n", memory_get_peak_usage() / 1048576);
+$processPeak = max($processPeak, memory_get_peak_usage());
+
+printf("Whole process peak memory: %.2f MB\n", $processPeak / 1048576);
