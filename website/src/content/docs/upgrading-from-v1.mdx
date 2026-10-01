@@ -111,7 +111,7 @@ Scores are **not comparable** across versions. The numbers mean something else, 
 - **Neutral is a real result.** v2 calls a text neutral when its compound score is close to zero. Empty text and text with no known word are neutral.
 - **Context matters.** `not good`, `very good`, `GOOD!!!` and `good, but…` get different scores. v1 mostly counted words. See [Understanding the scores](/guides/understanding-scores/).
 - **Text handling is stricter and safer.** Invalid UTF-8 never throws. Results do not depend on the `mb_internal_encoding()` of the host.
-- **No interfaces to implement.** If you used your own tokenizer, dictionary or validator, move that work to `withWords()` and `withoutWords()`, or clean up the text before you call `analyze()`.
+- **No interfaces to implement.** Did you use your own tokenizer, dictionary or validator? Move that work to `withWords()` and `withoutWords()`. Or clean up the text before you call `analyze()`.
 
 ## Migration checklist
 

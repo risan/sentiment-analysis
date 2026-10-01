@@ -8,7 +8,7 @@ base="http://localhost:${port}"
 body="$(mktemp)"
 log="$(mktemp)"
 
-if curl -s -o /dev/null "$base/"; then
+if curl -s -m 2 -o /dev/null "$base/"; then
   echo "FAIL something already answers on port ${port}; stop it first so the checks hit this build"
   exit 1
 fi
@@ -28,7 +28,7 @@ for _ in $(seq 1 60); do
     exit 1
   fi
 
-  if curl -s -o /dev/null "$base/"; then
+  if curl -s -m 2 -o /dev/null "$base/"; then
     ready=true
     break
   fi
@@ -46,7 +46,7 @@ failures=0
 
 check() {
   local path="$1" expected="$2" code
-  code="$(curl -sS -o "$body" -w '%{http_code}' "$base$path")"
+  code="$(curl -sS -m 10 -o "$body" -w '%{http_code}' "$base$path")"
 
   if [ "$code" = "$expected" ]; then
     echo "ok   GET $path -> $code"

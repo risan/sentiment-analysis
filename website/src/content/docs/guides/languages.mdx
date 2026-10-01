@@ -101,7 +101,7 @@ A lexicon method does not match a fine-tuned neural model. The package publishes
 ### Known limits
 
 - **Sarcasm and irony** are read at face value.
-- **Regional languages** (Javanese, Sundanese and others) and heavy code-mixing are only partly covered. The Indonesian lexicon includes English words that are common in Indonesian reviews (`good`, `best`, `worst`). It does not fall back to the whole English lexicon. On the SmSA validation split, that fallback did not improve the macro F1, because many English words are also ordinary Indonesian words (`sore`, `alas`, `no`).
+- **Regional languages** (Javanese, Sundanese and others) and heavy code-mixing are only partly covered. The Indonesian lexicon includes English words that are common in Indonesian reviews (`good`, `best`, `worst`). It does not fall back to the whole English lexicon. On the SmSA validation split, that fallback did not improve the macro F1. Many English words are also ordinary Indonesian words (`sore`, `alas`, `no`).
 - **Words from your field**, such as product names or medical and legal terms, are missing unless you [add them](/guides/customizing-the-lexicon/).
 - **Words are not stemmed.** An affixed form must be in the lexicon to be found, so rare forms can be missed.
 - **Ambiguous words** get a careful score or are left out. For example, `parah` ("severe") is negative on its own. After another sentiment word it is an intensifier, as in `keren parah`.

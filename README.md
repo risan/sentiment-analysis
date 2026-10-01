@@ -110,7 +110,7 @@ $result->label;    // Label::Positive
 $result->compound; // 0.5848
 ```
 
-The default threshold is 0.05. A text is positive when `compound` is at least the threshold, negative when it is at most minus the threshold, and neutral otherwise.
+The default threshold is 0.05. A text is positive when `compound` is at least the threshold. It is negative when `compound` is at most minus the threshold. Otherwise it is neutral.
 
 More in the documentation: [understanding the scores](https://sentiment-analysis.risanb.com/guides/understanding-scores/), [languages](https://sentiment-analysis.risanb.com/guides/languages/), [customizing the lexicon](https://sentiment-analysis.risanb.com/guides/customizing-the-lexicon/), [thresholds](https://sentiment-analysis.risanb.com/guides/thresholds/) and [long text](https://sentiment-analysis.risanb.com/guides/long-text/).
 
@@ -128,9 +128,9 @@ It is a lexicon method. It does not understand sarcasm, regional languages or wo
 
 ## Accuracy and performance
 
-On the test split of [IndoNLU SmSA](https://github.com/IndoNLP/indonlu) (500 reviews and comments, three classes, default threshold), Indonesian scoring reaches 81.2% accuracy and 0.744 macro F1. Always guessing the most common class gives 41.6% accuracy. A fine-tuned model reaches more. Reproduce the numbers with `php tools/evaluate-id.php --split=test`. See [Languages](https://sentiment-analysis.risanb.com/guides/languages/).
+On the test split of [IndoNLU SmSA](https://github.com/IndoNLP/indonlu), Indonesian scoring reaches 81.2% accuracy and 0.744 macro F1. The split has 500 reviews and comments in three classes, and the test uses the default threshold. Always guessing the most common class gives 41.6% accuracy. A fine-tuned model reaches more. Reproduce the numbers with `php tools/evaluate-id.php --split=test`. See [Languages](https://sentiment-analysis.risanb.com/guides/languages/).
 
-The package scores about 80,000 short English texts per second and about 14,000 reviews per second, with OPcache on (PHP 8.5, a laptop with Docker on WSL2, single runs that vary by 10% or more). The whole benchmark process peaks at about 2 MB. Run `php benchmarks/run.php` on your own hardware. See [Performance](https://sentiment-analysis.risanb.com/guides/performance/).
+With OPcache on, the package scores about 80,000 short English texts per second and about 14,000 reviews per second. These are single runs on PHP 8.5, on a laptop with Docker on WSL2. They vary by 10% or more. The whole benchmark process peaks at about 2 MB. Run `php benchmarks/run.php` on your own hardware. See [Performance](https://sentiment-analysis.risanb.com/guides/performance/).
 
 ## Development
 
