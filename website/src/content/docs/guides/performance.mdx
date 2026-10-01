@@ -10,15 +10,16 @@ The package is built to be cheap to call: one pass over the tokens, constant-tim
 
 ## Benchmarks
 
-Measured with `benchmarks/run.php` from the repository, with OPcache enabled.
+Measured with `benchmarks/run.php` from the repository, with OPcache enabled. These are single runs on a laptop (Docker on WSL2), so treat them as a rough guide: repeated runs vary by 10% or more.
 
-| Measure | Result |
-|---|---|
-| PHP version | {metrics.benchmark.phpVersion ?? '—'} |
-| Short texts (a tweet) per second | <Metric value={metrics.benchmark.shortTextsPerSecond} /> |
-| Reviews (about 100 words) per second | <Metric value={metrics.benchmark.reviewsPerSecond} /> |
-| Long texts (about 2,000 words) per second | <Metric value={metrics.benchmark.longTextsPerSecond} /> |
-| Peak memory, English analyzer | <Metric value={metrics.benchmark.peakMemoryMb} as="megabytes" /> |
+| Measure | English | Indonesian |
+|---|---|---|
+| PHP version | {metrics.benchmark.phpVersion ?? '—'} | {metrics.benchmark.phpVersion ?? '—'} |
+| Short texts (a tweet) per second | <Metric value={metrics.benchmark.shortTextsPerSecond} /> | <Metric value={metrics.benchmark.indonesianShortTextsPerSecond} /> |
+| Reviews (about 100 words) per second | <Metric value={metrics.benchmark.reviewsPerSecond} /> | <Metric value={metrics.benchmark.indonesianReviewsPerSecond} /> |
+| Long texts (about 2,000 words) per second | <Metric value={metrics.benchmark.longTextsPerSecond} /> | <Metric value={metrics.benchmark.indonesianLongTextsPerSecond} /> |
+
+The peak memory of the whole benchmark process, with both languages loaded, was about <Metric value={metrics.benchmark.peakMemoryMb} as="megabytes" />.
 
 Run the benchmark on your own hardware to see numbers for your setup:
 
@@ -54,4 +55,4 @@ php -d opcache.enable_cli=1 artisan queue:work
 
 ## Memory
 
-Lexicons load once per process and per language. Analyzing a text allocates only its token list, so memory use stays flat however many texts you analyze.
+Lexicons load once per process and per language. Analyzing a text allocates only its token list, so memory use stays flat however many texts you analyze. Without OPcache, loading a lexicon costs about 1 MB for English and 0.5 MB for Indonesian per process, and the whole benchmark process peaks at about 3 MB. With OPcache the lexicons live in shared memory and the per-process cost is a few KB.

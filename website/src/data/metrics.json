@@ -1,10 +1,13 @@
 {
   "benchmark": {
     "phpVersion": "8.5.11",
-    "shortTextsPerSecond": 66164,
-    "reviewsPerSecond": 11993,
-    "longTextsPerSecond": 649,
-    "peakMemoryMb": 0.98
+    "shortTextsPerSecond": 80000,
+    "reviewsPerSecond": 14000,
+    "longTextsPerSecond": 770,
+    "indonesianShortTextsPerSecond": 66000,
+    "indonesianReviewsPerSecond": 14000,
+    "indonesianLongTextsPerSecond": 770,
+    "peakMemoryMb": 2.2
   },
   "indonesian": {
     "lexiconEntries": 2776,

@@ -123,13 +123,18 @@ treat the numbers as a rough guide), OPcache on and off:
 
 | Text | Words | Analyses per second, OPcache on | Analyses per second, OPcache off |
 | --- | --- | --- | --- |
-| Tweet, English | 17 | about 66,000 | about 56,000 |
-| Review, English | 106 | about 12,000 | about 9,800 |
-| Long text, English | 2,120 | about 650 | about 530 |
+| Tweet, English | 17 | about 80,000 | about 66,000 |
+| Review, English | 106 | about 14,000 | about 12,000 |
+| Long text, English | 2,120 | about 770 | about 650 |
+| Tweet, Indonesian | 10 | about 66,000 | about 57,000 |
+| Review, Indonesian | 93 | about 14,000 | about 12,000 |
+| Long text, Indonesian | 1,860 | about 770 | about 670 |
 
-The lexicons are plain PHP array files. With OPcache they live in shared memory and cost almost
-nothing per process; without it they load once per process (about 1 MB for English). The peak
-memory of the whole benchmark process (both languages) is about 3 MB.
+These are single runs and vary by 10% or more between runs. The lexicons are plain PHP array
+files. With OPcache they live in shared memory and cost almost nothing per process; without it
+they load once per process (about 1 MB for English, 0.5 MB for Indonesian). The peak memory of
+the whole benchmark process, with both languages loaded, is about 2 MB with OPcache and about
+3 MB without.
 
 ## Development
 
