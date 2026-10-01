@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 - Unreleased
+## 2.0.0 - 2026-10-02
 
 A complete rewrite. The API is not compatible with 1.x.
 
